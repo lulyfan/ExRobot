@@ -1,0 +1,25 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="基本设置">
+
+        <EditTextPreference
+            android:key="floor"
+            android:title="机器人的初始楼层"
+            android:dialogTitle="机器人的初始楼层"
+            android:defaultValue="1" />
+
+        <EditTextPreference
+            android:key="initPosition"
+            android:title="设置初始化坐标"
+            android:dialogTitle="坐标格式:X,Y,Z,W" />
+
+        <EditTextPreference
+            android:key="exPosition"
+            android:title="设置取快递坐标"
+            android:dialogTitle="坐标格式:X,Y,Z,W" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:paddingTop="10dp"
+    android:paddingBottom="10dp">
+
+    <ImageView
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:id="@+id/accountIcon"
+        android:background="@drawable/member"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="25sp"
+        android:layout_marginLeft="20dp"
+        android:layout_toRightOf="@+id/accountIcon"
+        android:id="@+id/name"
+        android:text="汤姆猫"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="25sp"
+        android:layout_marginTop="5dp"
+        android:layout_alignLeft="@+id/name"
+        android:layout_below="@+id/name"
+        android:id="@+id/phoneNum"
+        android:text="1234567890"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/delete"
+        android:layout_alignBottom="@+id/delete"
+        android:layout_alignTop="@+id/delete"
+        android:gravity="center"
+        android:textSize="25sp"
+        android:text="1"
+        android:id="@+id/exCount"/>
+
+    <ImageButton
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentRight="true"
+        android:id="@+id/delete"
+        android:background="@drawable/del"/>
+</RelativeLayout>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:baselineAligned="false">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="350dp"
+        android:visibility="invisible">
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tv_showResult"
+        android:layout_marginTop="100dp"
+        android:textSize="50sp"
+        android:textColor="@color/dark_grey_color"
+        android:text="lulyfan,您的快递到了，领取快递后请点击确认领取"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:textSize="60sp"
+        android:textColor="@android:color/black"
+        android:padding="20dp"
+        android:text="确认领取"
+        android:id="@+id/bt_confirm"
+        android:background="@null"
+        android:drawableLeft="@drawable/get_ex"/>
+</LinearLayout>

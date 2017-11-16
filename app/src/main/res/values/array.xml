@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="isInitPoseEntries">
+        <item>是</item>
+        <item>否</item>
+    </string-array>
+
+    <string-array name="isInitPoseValueEntries">
+        <item>true</item>
+        <item>false</item>
+    </string-array>
+</resources>

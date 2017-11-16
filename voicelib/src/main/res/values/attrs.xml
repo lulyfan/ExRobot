@@ -1,0 +1,32 @@
+<resources>
+
+    <!-- Declare custom theme attributes that allow changing which styles are
+         used for button bars depending on the API level.
+         ?android:attr/buttonBarStyle is new as of API 11 so this is
+         necessary to support previous API levels. -->
+    <declare-styleable name="ButtonBarContainerTheme">
+        <attr name="metaButtonBarStyle" format="reference" />
+        <attr name="metaButtonBarButtonStyle" format="reference" />
+    </declare-styleable>
+    
+        <attr name="firstColor" format="color"></attr>
+    <attr name="secondColor" format="color"></attr>
+    <attr name="circleWidth" format="dimension"></attr>
+    <attr name="dotCount" format="integer"></attr>
+    <attr name="splitSize" format="integer"></attr>
+    <attr name="currentCount" format="integer"></attr>
+    <attr name="bg" format="reference"></attr>
+
+    <declare-styleable name="VoiceView">
+        <attr name="firstColor"/>
+        <attr name="secondColor"/>
+        <attr name="circleWidth"/>
+        <attr name="dotCount"/>
+        <attr name="splitSize"/>
+        <attr name="currentCount"/>
+        <attr name="bg"/>
+    </declare-styleable>
+    
+    
+
+</resources>

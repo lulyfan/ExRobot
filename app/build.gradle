@@ -1,0 +1,80 @@
+apply plugin: 'com.android.application'
+apply plugin: 'org.greenrobot.greendao'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "25.0.2"
+    defaultConfig {
+        applicationId "com.ut.lulyfan.exrobot"
+        minSdkVersion 15
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+
+        dexOptions {
+            javaMaxHeapSize "4g"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    productFlavors {
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.greenrobot:greendao-gradle-plugin:3.2.0'
+    }
+}
+
+greendao {
+    daoPackage 'greenDao'
+    schemaVersion 4
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile project(':android_10-0.2.0')
+    compile project(':rosjava-0.2.1')
+    compile files('libs/actionlib_msgs-1.11.7.jar')
+    compile project(':voicelib')
+    compile files('libs/aliyun-java-sdk-core-3.3.1.jar')
+    compile files('libs/aliyun-java-sdk-dysmsapi-1.0.0.jar')
+    compile project(':lib')
+    compile files('libs/poi_lib/ooxml-lib/curvesapi-1.04.jar')
+    compile files('libs/poi_lib/commons-collections4-4.1.jar')
+    compile files('libs/poi_lib/commons-logging-1.2.jar')
+    compile files('libs/poi_lib/junit-4.12.jar')
+    compile files('libs/poi_lib/log4j-1.2.17.jar')
+    compile files('libs/poi_lib/poi-3.17.jar')
+    compile files('libs/poi_lib/poi-examples-3.17.jar')
+    compile files('libs/poi_lib/poi-excelant-3.17.jar')
+    compile files('libs/poi_lib/poi-ooxml-3.17.jar')
+    compile files('libs/poi_lib/poi-ooxml-schemas-3.17.jar')
+    compile files('libs/poi_lib/poi-scratchpad-3.17.jar')
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.android.support:multidex:1.0.1'
+    compile 'org.greenrobot:greendao:3.2.0'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
+    compile 'com.android.support:support-v4:24.2.1'
+    testCompile 'junit:junit:4.12'
+    compile files('libs/doorManager.jar')
+}

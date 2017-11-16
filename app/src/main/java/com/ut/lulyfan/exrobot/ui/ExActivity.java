@@ -1,0 +1,315 @@
+package com.ut.lulyfan.exrobot.ui;
+
+import android.app.FragmentTransaction;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.preference.PreferenceManager;
+import android.support.annotation.RequiresApi;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.widget.Toast;
+
+import com.iflytek.cloud.SpeechError;
+import com.ut.lulyfan.exrobot.R;
+import com.ut.lulyfan.exrobot.model.Customer;
+import com.ut.lulyfan.exrobot.ros.ClientActivity;
+import com.ut.lulyfan.exrobot.util.SmsUtil;
+import com.ut.lulyfan.voicelib.voiceManager.SpeechSynthesizeManager;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ExActivity extends ClientActivity {
+
+    public static final int START_EX = 0;
+    public static final int END_EX = 1;
+    public static final int GO_HOME = 2; //返回主界面
+    public static final int INIT = 3;
+
+    private List<Customer> customers = new ArrayList<>();  //快递的送达客户
+    private ArrayList<Customer> failedCustomers = new ArrayList<>();  //快递未领取的客户
+    private int initFloor ;  //机器人的初始化楼层
+    private int floor ;      //机器人当前所处楼层
+    private double[] initPosition = new double[4];
+    private double[] exPosition = new double[4];    //获取快递的坐标点
+    private long lastTime;   //检测长按的时间
+    private long blockSynEndTime;     //阻塞时语音合成结束时间
+    private SpeechSynthesizeManager ssm;
+    private MoveFragment moveFragment;
+    private InitFragment initFragment;
+    private BatteryView batteryView;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_ex);
+
+        batteryView = (BatteryView) findViewById(R.id.battery);
+
+        ssm = new SpeechSynthesizeManager(this, false, handler);
+        moveFragment = new MoveFragment();
+        initFragment = new InitFragment();
+
+        setBlockHandler(new BlockHandler() {
+            @Override
+            public void hanldBlock() {
+                if (!ssm.isInSession() && System.currentTimeMillis() - blockSynEndTime >= 2000) {
+                    ssm.setSynCompletedListener(new SpeechSynthesizeManager.SynCompletedListener() {
+                        @Override
+                        public void onSynCompleted(SpeechError error) {
+                            blockSynEndTime = System.currentTimeMillis();
+                            ssm.setSynCompletedListener(null);
+                        }
+                    });
+                    ssm.startSpeaking("请让一让，谢谢");
+                }
+            }
+        });
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        Log.i("ui", "activity onTouchEvent");
+        long gapTime;
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                lastTime = System.currentTimeMillis();
+            case MotionEvent.ACTION_UP:
+                gapTime = System.currentTimeMillis() - lastTime;
+                if (gapTime >= 5000) {
+                    Intent intent = new Intent(this, SettingActivity.class);
+                    startActivity(intent);
+                }
+                break;
+            default:
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
+    private void doSetting() {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        String sfloor = sharedPref.getString(SettingActivity.SettingsFragment.KEY_FLOOR, null);
+        String sInitPosition = sharedPref.getString(SettingActivity.SettingsFragment.KEY_INIT_POSITION, null);
+        String sExPosition = sharedPref.getString(SettingActivity.SettingsFragment.KEY_EX_POSITION, null);
+
+        if (sInitPosition == null || sExPosition == null || sfloor == null) {
+            //未进行相应设置,跳转到设置界面
+            Intent intent1 = new Intent(this, SettingActivity.class);
+            startActivity(intent1);
+        } else {
+
+            try {
+                initFloor = floor = Integer.parseInt(sfloor);
+            } catch (Exception e) {
+                Toast.makeText(this, "楼层数据异常,请重新设置", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(this, SettingActivity.class);
+                startActivity(intent);
+                return;
+            }
+
+            try {
+                String[] tmp = sInitPosition.split(",");
+                initPosition[0] = Double.valueOf(tmp[0]);
+                initPosition[1] = Double.valueOf(tmp[1]);
+                initPosition[2] = Double.valueOf(tmp[2]);
+                initPosition[3] = Double.valueOf(tmp[3]);
+
+                tmp = sExPosition.split(",");
+                exPosition[0] = Double.valueOf(tmp[0]);
+                exPosition[1] = Double.valueOf(tmp[1]);
+                exPosition[2] = Double.valueOf(tmp[2]);
+                exPosition[3] = Double.valueOf(tmp[3]);
+
+            } catch (Exception e) {
+                Toast.makeText(this, "坐标数据异常,请重新设置", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(this, SettingActivity.class);
+                startActivity(intent);
+            }
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        doSetting();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
+        ft.replace(R.id.container, initFragment);
+        ft.commit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        nodeMainExecutorService.forceShutdown();
+        ssm.destory();
+    }
+
+    private long batteryUpdateTime;
+    @Override
+    protected void handleBattery(final double battery) {
+
+        if (System.currentTimeMillis() - batteryUpdateTime < 5000)
+            return;
+
+        batteryUpdateTime = System.currentTimeMillis();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                batteryView.setPower((int) battery);
+            }
+        });
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    @Override
+    protected void handleStandby() {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                initFragment.ready();
+            }
+        });
+    }
+
+    //快递任务
+    public void express(final Customer customer) {
+
+        ssm.startSpeaking("开始派送"+customer.getName()+"的快递");
+
+        goTalker.sendMsg(customer.getX(), customer.getY(), customer.getW(), customer.getZ());
+        //切换到移动的fragment
+        moveFragment.setTip("正在派送"+customer.getName()+"的快递...");
+        FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
+        ft.replace(R.id.container,  moveFragment);
+        ft.commit();
+
+        setArriveHandler(new ArriveHandler() {
+            @Override
+            public void hanldArrive() {
+                //切换到快递送达的结果fragment
+                FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
+                ft.replace(R.id.container,  ShowResultFragment.newInstance(customer));
+                ft.commit();
+
+                SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.GET_EX);
+
+                ssm.startSpeakingMulti(customer.getName() + ",您有"+customer.getExCount()+"件快递到了,请取件", 2000, 2);
+                setArriveHandler(null);
+            }
+        });
+    }
+
+    //去取快递的地点（领取快递）
+    public void goExpressPosition() {
+
+        goTalker.sendMsg(exPosition[0], exPosition[1], exPosition[2], exPosition[3]);
+
+        moveFragment.setTip("正在前往前台...");
+        FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
+        ft.replace(R.id.container, moveFragment);
+        ft.commit();
+
+        setArriveHandler(new ArriveHandler() {
+            @Override
+            public void hanldArrive() {
+                //切换到快递送达的结果fragment
+                FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
+                ft.replace(R.id.container,  new InputFragment());
+                ft.commit();
+
+                setArriveHandler(null);
+            }
+        });
+    }
+
+    public void back() {
+
+        goTalker.sendMsg(exPosition[0], exPosition[1], exPosition[2], exPosition[3]);
+
+//        ssm.startSpeaking("快递派送完毕,开始返回...");
+        moveFragment.setTip("快递派送完毕,正在返回...");
+        FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
+        ft.replace(R.id.container, moveFragment);
+        ft.commit();
+
+        setArriveHandler(new ArriveHandler() {
+            @Override
+            public void hanldArrive() {
+                //切换到快递送达的结果fragment
+                FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
+                if (failedCustomers.isEmpty())
+                    ft.replace(R.id.container,  new InputFragment());
+                else {
+                    ssm.startSpeaking("有未签收快递，请查看");
+                    ft.replace(R.id.container, FailedFragment.getInstance(failedCustomers));
+                }
+                ft.commit();
+
+                setArriveHandler(null);
+            }
+        });
+    }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+
+                case START_EX:
+                    customers = (List<Customer>) msg.obj;
+                    if (!customers.isEmpty()) {
+                        express(customers.get(0));
+                        customers.remove(0);
+                    }
+                    break;
+
+                case END_EX:
+                    ssm.stopSpeakingLoop();
+
+                    if (msg.obj != null) {
+                        Customer customer = (Customer) msg.obj;
+                        failedCustomers.add(customer);
+                        SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.EX_FAIL);
+                    }
+
+                    if (!customers.isEmpty()) {
+                        express(customers.get(0));
+                        customers.remove(0);
+                    } else {
+                        back();
+                    }
+                    break;
+
+                //返回主界面
+                case GO_HOME:
+                    failedCustomers.clear();
+                    FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
+                    ft.replace(R.id.container, new InputFragment());
+                    ft.commit();
+                    break;
+
+                case INIT:
+                    initPoseTalker.sendMsg(initPosition[0], initPosition[1], initPosition[2], initPosition[3]);
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                           goExpressPosition();
+                        }
+                    }, 1000);
+
+                default:
+            }
+        }
+    };
+
+}

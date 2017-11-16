@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:voiceView="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_gravity="center">
+
+    <com.ut.lulyfan.voicelib.voiceManager.VoiceView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+
+        voiceView:circleWidth="10dp"
+        voiceView:dotCount="6"
+        voiceView:currentCount="0"
+        voiceView:firstColor="#EEF3FF"
+        voiceView:secondColor="#3DA9ED"
+        voiceView:splitSize="25"
+        android:id="@+id/voiceView"
+        android:layout_marginRight="5dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:textSize="15sp"
+        android:gravity="center_vertical"
+        android:textColor="@android:color/black"
+
+        android:layout_marginTop="0dp"
+        android:id="@+id/tv_tip" />
+
+</LinearLayout>
