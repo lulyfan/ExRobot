@@ -33,6 +33,8 @@ public class Customer implements Serializable{
 
     @Transient
     private int exCount = 1;
+    @Transient
+    private String code;  //取货码
 
     @Generated(hash = 757791955)
     public Customer(Long id, String name, String phoneNum, int floor, String area,
@@ -131,5 +133,13 @@ public class Customer implements Serializable{
 
     public void setExCount(int exCount) {
         this.exCount = exCount;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

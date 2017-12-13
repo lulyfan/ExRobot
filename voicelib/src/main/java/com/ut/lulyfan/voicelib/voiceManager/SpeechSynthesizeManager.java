@@ -85,7 +85,11 @@ public class SpeechSynthesizeManager {
         return true;
     }
 
+    private boolean loopFlag;
+
     public void startSpeakingLoop(final String text, final long gapTime) {
+
+        loopFlag = true;
 
         setSynCompletedListener(new SynCompletedListener() {
             @Override
@@ -94,7 +98,8 @@ public class SpeechSynthesizeManager {
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            startSpeaking(text);
+                            if (loopFlag)
+                                startSpeaking(text);
                         }
                     }, gapTime);
             }
@@ -134,6 +139,7 @@ public class SpeechSynthesizeManager {
     }
 
     public void stopSpeakingLoop() {
+        loopFlag = false;
         setSynCompletedListener(null);
         stopSpeaking();
     }

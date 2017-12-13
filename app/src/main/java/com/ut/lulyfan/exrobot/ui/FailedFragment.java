@@ -15,6 +15,7 @@ import android.widget.Button;
 
 import com.ut.lulyfan.exrobot.R;
 import com.ut.lulyfan.exrobot.model.Customer;
+import com.ut.lulyfan.exrobot.util.DoorUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.List;
 public class FailedFragment extends Fragment{
 
     private static final String KEY = "failedCustomer";
+    private DoorUtil doorUtil;
 
     public static FailedFragment getInstance(ArrayList<Customer> customers) {
         Bundle bundle = new Bundle();
@@ -38,6 +40,8 @@ public class FailedFragment extends Fragment{
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
+
+        doorUtil = new DoorUtil(getActivity());
 
         List<Customer> customers = (List<Customer>) getArguments().getSerializable(KEY);
         final Handler handler = ((ExActivity)getActivity()).handler;
@@ -59,6 +63,24 @@ public class FailedFragment extends Fragment{
                         break;
                     case MotionEvent.ACTION_UP:
                         handler.sendEmptyMessage(ExActivity.GO_HOME);
+                        break;
+                    default:
+                }
+                return true;
+            }
+        });
+
+        final Button open = (Button) root.findViewById(R.id.open);
+        open.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        open.setBackgroundColor(Color.LTGRAY);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        open.setBackgroundColor(Color.TRANSPARENT);
+                        doorUtil.open();
                         break;
                     default:
                 }

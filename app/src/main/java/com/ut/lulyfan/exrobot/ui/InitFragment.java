@@ -24,7 +24,7 @@ public class InitFragment extends Fragment{
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
-        View root = inflater.inflate(R.layout.layout, container, false);
+        View root = inflater.inflate(R.layout.fragment_init, container, false);
         start = (Button) root.findViewById(R.id.bt_start);
         start.setOnTouchListener(new View.OnTouchListener() {
             @Override

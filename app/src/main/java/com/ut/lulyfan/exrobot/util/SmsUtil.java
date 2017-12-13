@@ -36,10 +36,11 @@ public class SmsUtil {
     static final String accessKeyId = "LTAIVcaa6VP7urae";
     static final String accessKeySecret = "AFOtPXsBVrQcRhuB6TEQM703J3R9DX";
 
-    public static final String GET_EX = "SMS_109440082";  //领取快递模板
+    public static final String START = "SMS_114060287";  //开始派送快递模板
+    public static final String ARRIVE = "SMS_114075309";               //快递到达模板
     public static final String EX_FAIL = "SMS_109495374";  //快递派送失败模板
 
-    public static SendSmsResponse sendSms(String phoneNum, String templateCode) throws ClientException {
+    public static SendSmsResponse sendSms(String phoneNum, String templateCode, String para) throws ClientException {
 
         //可自助调整超时时间
         System.setProperty("sun.net.client.defaultConnectTimeout", "10000");
@@ -61,7 +62,8 @@ public class SmsUtil {
         request.setTemplateCode(templateCode);
         //可选:模板中的变量替换JSON串,如模板内容为"亲爱的${name},您的验证码为${code}"时,此处的值为
 //        request.setTemplateParam("{\"name\":\"Tom\", \"code\":\"123\"}");
-
+        if (para != null && !para.equals(""))
+            request.setTemplateParam(para);
         //选填-上行短信扩展码(无特殊需求用户请忽略此字段)
         //request.setSmsUpExtendCode("90997");
 
@@ -108,10 +110,10 @@ public class SmsUtil {
         return querySendDetailsResponse;
     }
 
-    public static void send(String phoneNum, String templateCode) throws ClientException, InterruptedException {
+    public static void send(String phoneNum, String templateCode, String para) throws ClientException, InterruptedException {
 
         //发短信
-        SendSmsResponse response = sendSms(phoneNum, templateCode);
+        SendSmsResponse response = sendSms(phoneNum, templateCode, para);
         System.out.println("短信接口返回的数据----------------");
         System.out.println("Code=" + response.getCode());
         System.out.println("Message=" + response.getMessage());
@@ -145,13 +147,13 @@ public class SmsUtil {
 
     }
 
-    public static void asyncSend(final String phoneNum, final String templateCode) {
+    public static void asyncSend(final String phoneNum, final String templateCode, final String para) {
 
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        send(phoneNum, templateCode);
+                        send(phoneNum, templateCode, para);
                     } catch (ClientException e) {
                         e.printStackTrace();
                         System.out.println(e.getErrMsg());

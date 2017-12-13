@@ -24,7 +24,6 @@ public class ClientActivity extends RosActivity {
     protected Listener<Int64> errorCode;
     protected Listener<Float64> battery;
     protected Listener<Bool> zwj_standby;
-    private boolean isFirst = true;
 
     public ClientActivity() {
         super("ExRobot", "ExRobot", URI.create("http://192.168.168.100:11311"));
@@ -83,8 +82,7 @@ public class ClientActivity extends RosActivity {
         zwj_standby.setMessageListener(new MessageListener<Bool>() {
             @Override
             public void onNewMessage(Bool bool) {
-                if (bool.getData() && isFirst) {
-                    isFirst = false;
+                if (bool.getData()) {
                     handleStandby();
                 }
             }

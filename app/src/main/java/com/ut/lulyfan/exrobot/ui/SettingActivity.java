@@ -11,6 +11,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.ut.lulyfan.exrobot.R;
@@ -26,11 +27,14 @@ import java.util.List;
 
 public class SettingActivity extends Activity {
 
+    Button bt_sure;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setting);
 
+        bt_sure = (Button) findViewById(R.id.sure);
         getFragmentManager().beginTransaction()
                             .add(R.id.fragmentContainer, new SettingsFragment())
                             .commit();
@@ -65,6 +69,9 @@ public class SettingActivity extends Activity {
         switch (requestCode) {
             case FILE_SELECT_CODE:
                 if (resultCode == RESULT_OK) {
+
+                    bt_sure.setEnabled(false);
+
                     // Get the Uri of the selected file
                     Uri uri = data.getData();
                     Log.d(TAG, "File Uri: " + uri.toString());
@@ -79,6 +86,7 @@ public class SettingActivity extends Activity {
 
                         for (Customer customer : customers)
                             customerDBUtil.write(customer);
+                        Toast.makeText(this, "数据导入完成", Toast.LENGTH_SHORT).show();
 
                     } catch (URISyntaxException e) {
                         e.printStackTrace();
@@ -89,6 +97,8 @@ public class SettingActivity extends Activity {
                     } catch (NumberFormatException e) {
                         Toast.makeText(this, "Excel地址库坐标数据错误："+e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
+
+                    bt_sure.setEnabled(true);
                 }
                 break;
         }
@@ -119,6 +129,7 @@ public class SettingActivity extends Activity {
         public static final String KEY_FLOOR = "floor";
         public static final String KEY_INIT_POSITION = "initPosition";
         public static final String KEY_EX_POSITION = "exPosition";
+        public static final String KEY_SN = "sn";
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -133,6 +144,7 @@ public class SettingActivity extends Activity {
             super.onResume();
 
             SharedPreferences sp = getPreferenceManager().getSharedPreferences();
+            findPreference(KEY_SN).setSummary(sp.getString(KEY_SN, "未知"));
             findPreference(KEY_FLOOR).setSummary(sp.getString(KEY_FLOOR, "1"));
             findPreference(KEY_INIT_POSITION).setSummary(sp.getString(KEY_INIT_POSITION, ""));
             findPreference(KEY_EX_POSITION).setSummary(sp.getString(KEY_EX_POSITION, ""));
@@ -148,7 +160,13 @@ public class SettingActivity extends Activity {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 
-            if (key.equals(KEY_FLOOR)) {
+            if (key.equals(KEY_SN)) {
+
+                Preference snSP = findPreference(key);
+                String sn = sharedPreferences.getString(key, "未知");
+                snSP.setSummary(sn);
+
+            }   else if (key.equals(KEY_FLOOR)) {
 
                 Preference floorSP = findPreference(key);
                 String floor = sharedPreferences.getString(key, "1");

@@ -13,24 +13,48 @@
         android:visibility="invisible">
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="430dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/password"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="40sp"
+            android:hint="请输入取货码"
+            android:textColorHint="@color/dark_gray"
+            android:paddingTop="20dp"
+            android:paddingBottom="20dp"
+            android:background="@null" />
+
+        <TextView
+            android:id="@+id/countdown"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textSize="40sp"
+            android:textColor="@color/colorAccent"
+            android:text="120S"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+
+    <com.github.omadahealth.lollipin.lib.views.KeyboardView
+        android:id="@+id/keyboard_view"
+        android:layout_width="430dp"
+        android:layout_height="430dp" />
+
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="430dp"
         android:layout_height="wrap_content"
         android:id="@+id/tv_showResult"
-        android:layout_marginTop="100dp"
-        android:textSize="50sp"
-        android:textColor="@color/dark_grey_color"
-        android:text="lulyfan,您的快递到了，领取快递后请点击确认领取"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:textSize="60sp"
+        android:textSize="40sp"
         android:textColor="@android:color/black"
-        android:padding="20dp"
-        android:text="确认领取"
-        android:id="@+id/bt_confirm"
-        android:background="@null"
-        android:drawableLeft="@drawable/get_ex"/>
+        android:text="lulyfan,您的快递到了"
+        android:layout_marginTop="20dp"
+        android:gravity="center"/>
+
 </LinearLayout>

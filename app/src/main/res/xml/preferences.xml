@@ -5,6 +5,11 @@
         android:title="基本设置">
 
         <EditTextPreference
+            android:key="sn"
+            android:title="机器人SN"
+            android:dialogTitle="机器人SN" />
+
+        <EditTextPreference
             android:key="floor"
             android:title="机器人的初始楼层"
             android:dialogTitle="机器人的初始楼层"

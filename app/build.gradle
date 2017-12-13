@@ -29,6 +29,7 @@ android {
 
     packagingOptions {
         exclude 'META-INF/LICENSE'
+        exclude 'META-INF/INDEX.LIST'
     }
 }
 
@@ -70,11 +71,11 @@ dependencies {
     compile files('libs/poi_lib/poi-ooxml-schemas-3.17.jar')
     compile files('libs/poi_lib/poi-scratchpad-3.17.jar')
     compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.android.support:multidex:1.0.1'
     compile 'org.greenrobot:greendao:3.2.0'
     compile 'com.android.support:recyclerview-v7:24.2.1'
     compile 'com.android.support:support-v4:24.2.1'
     testCompile 'junit:junit:4.12'
     compile files('libs/doorManager.jar')
+    compile files('libs/mysql-connector-java-5.1.32-bin.jar')
 }

@@ -13,8 +13,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.omadahealth.lollipin.lib.enums.KeyboardButtonEnum;
@@ -23,6 +23,8 @@ import com.github.omadahealth.lollipin.lib.views.KeyboardView;
 import com.ut.lulyfan.exrobot.R;
 import com.ut.lulyfan.exrobot.model.Customer;
 import com.ut.lulyfan.exrobot.util.CustomerDBUtil;
+import com.ut.lulyfan.exrobot.util.DoorUtil;
+import com.ut.lulyfan.voicelib.voiceManager.SpeechSynthesizeManager;
 
 import java.util.List;
 
@@ -35,11 +37,19 @@ import greenDao.CustomerDao;
 //负责快递信息的输入
 public class InputFragment extends Fragment {
 
+    DoorUtil doorUtil;
+    SpeechSynthesizeManager ssm;
+    Handler handler;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
 
-        View root = inflater.inflate(R.layout.fragment_init, container, false);
+        doorUtil = new DoorUtil(getActivity());
+        ssm = ((ExActivity) getActivity()).ssm;
+        handler = ((ExActivity) getActivity()).handler;
+
+        View root = inflater.inflate(R.layout.fragment_input, container, false);
         final LinearLayout exContainer = (LinearLayout) root.findViewById(R.id.ExContainer);
 
         final RecyclerView recyclerView = (RecyclerView) root.findViewById(R.id.ExList);
@@ -48,7 +58,8 @@ public class InputFragment extends Fragment {
         recyclerView.addItemDecoration(new RecycleViewDivider(getActivity(), LinearLayoutManager.HORIZONTAL, 3, Color.LTGRAY));
         recyclerView.setAdapter(new ExListAdapter(getActivity()));
 
-        final TextView et_phoneNum = (TextView) root.findViewById(R.id.phoneNum);
+        final EditText et_phoneNum = (EditText) root.findViewById(R.id.phoneNum);
+        et_phoneNum.setFocusable(false);
 
         KeyboardView keyboardView = (KeyboardView) root.findViewById(R.id.keyboard_view);
         keyboardView.setKeyboardButtonClickedListener(new KeyboardButtonClickedListener() {
@@ -72,13 +83,18 @@ public class InputFragment extends Fragment {
                             return;
                         }
 
+                        if (phoneNum.equals(getResources().getString(R.string.default_password))) {
+                            doorUtil.open();
+                            return;
+                        }
+
                         List<Customer> currentList = ((ExListAdapter) recyclerView.getAdapter()).getExList();
                         for (Customer customer : currentList) {
                             if (customer.getPhoneNum().equals(phoneNum)) {
-//                                Toast.makeText(getActivity(), "from recyclerView", Toast.LENGTH_SHORT).show();
                                 customer.setExCount(customer.getExCount() + 1);
                                 ((ExListAdapter) recyclerView.getAdapter()).notifyDataSetChanged();
                                 et_phoneNum.setText("");
+                                putEx();
                                 return;
                             }
                         }
@@ -86,12 +102,13 @@ public class InputFragment extends Fragment {
                         CustomerDBUtil dbUtil = CustomerDBUtil.getInstance();
                         List<Customer> customerList = dbUtil.queryCustomer(CustomerDao.Properties.PhoneNum, phoneNum);
                         if (customerList != null && !customerList.isEmpty()) {
-//                            Toast.makeText(getActivity(), "from db", Toast.LENGTH_SHORT).show();
                             exContainer.setVisibility(View.VISIBLE);
                             Customer customer = customerList.get(0);
                             customer.setExCount(1);   //解决数据库缓存问题
                             ((ExListAdapter) recyclerView.getAdapter()).addEx(customer);
                             et_phoneNum.setText("");
+
+                           putEx();
                         }
                         else {
                             Toast.makeText(getActivity(), "找不到" + phoneNum + "相应信息,请重新输入", Toast.LENGTH_SHORT).show();
@@ -131,8 +148,12 @@ public class InputFragment extends Fragment {
                         if (customers.size() == 0)
                             Toast.makeText(getActivity(), "未添加快递任务", Toast.LENGTH_SHORT).show();
                         else {
-                            Handler handler = ((ExActivity) getActivity()).handler;
-                            Message.obtain(handler, ExActivity.START_EX, customers).sendToTarget();
+                            if (doorUtil.check() == DoorUtil.CLOSED)
+                                Message.obtain(handler, ExActivity.START_EX, customers).sendToTarget();
+                            else {
+                                Toast.makeText(getActivity(), "请关闭厢门", Toast.LENGTH_SHORT).show();
+                                ssm.startSpeaking("请关闭厢门");
+                            }
                         }
                         break;
                     default:
@@ -144,5 +165,22 @@ public class InputFragment extends Fragment {
         return root;
     }
 
+    private void putEx() {
+        if (doorUtil.check() == DoorUtil.CLOSED) {
+            ((ExActivity) getActivity()).executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    doorUtil.open();
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(InputFragment.this.getActivity(), "厢门已打开,请放入快递", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    ssm.startSpeaking("厢门已打开,请放入快递");
 
+                }
+            });
+        }
+    }
 }

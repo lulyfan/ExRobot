@@ -16,12 +16,17 @@ import android.widget.Toast;
 import com.iflytek.cloud.SpeechError;
 import com.ut.lulyfan.exrobot.R;
 import com.ut.lulyfan.exrobot.model.Customer;
+import com.ut.lulyfan.exrobot.model.Record;
 import com.ut.lulyfan.exrobot.ros.ClientActivity;
+import com.ut.lulyfan.exrobot.util.MySqlUtil;
 import com.ut.lulyfan.exrobot.util.SmsUtil;
 import com.ut.lulyfan.voicelib.voiceManager.SpeechSynthesizeManager;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class ExActivity extends ClientActivity {
 
@@ -29,6 +34,8 @@ public class ExActivity extends ClientActivity {
     public static final int END_EX = 1;
     public static final int GO_HOME = 2; //返回主界面
     public static final int INIT = 3;
+
+    private static final int BlockSynTime = 2000;   //阻塞语音播放的间隔时间
 
     private List<Customer> customers = new ArrayList<>();  //快递的送达客户
     private ArrayList<Customer> failedCustomers = new ArrayList<>();  //快递未领取的客户
@@ -38,10 +45,15 @@ public class ExActivity extends ClientActivity {
     private double[] exPosition = new double[4];    //获取快递的坐标点
     private long lastTime;   //检测长按的时间
     private long blockSynEndTime;     //阻塞时语音合成结束时间
-    private SpeechSynthesizeManager ssm;
     private MoveFragment moveFragment;
     private InitFragment initFragment;
     private BatteryView batteryView;
+    SpeechSynthesizeManager ssm;
+    static Executor executor = Executors.newCachedThreadPool();
+    public static String sn;
+    public static String location = "金地";
+    private List<Record> failedRecords = new ArrayList<>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +69,7 @@ public class ExActivity extends ClientActivity {
         setBlockHandler(new BlockHandler() {
             @Override
             public void hanldBlock() {
-                if (!ssm.isInSession() && System.currentTimeMillis() - blockSynEndTime >= 2000) {
+                if (!ssm.isInSession() && System.currentTimeMillis() - blockSynEndTime >= BlockSynTime) {
                     ssm.setSynCompletedListener(new SpeechSynthesizeManager.SynCompletedListener() {
                         @Override
                         public void onSynCompleted(SpeechError error) {
@@ -69,7 +81,11 @@ public class ExActivity extends ClientActivity {
                 }
             }
         });
+
+        Record record = new Record(sn, "注册", location);
+        recordData(record);
     }
+
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -90,17 +106,20 @@ public class ExActivity extends ClientActivity {
         return super.dispatchTouchEvent(ev);
     }
 
-    private void doSetting() {
+    private void checkSetting() {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        String sSN = sharedPref.getString(SettingActivity.SettingsFragment.KEY_SN, null);
         String sfloor = sharedPref.getString(SettingActivity.SettingsFragment.KEY_FLOOR, null);
         String sInitPosition = sharedPref.getString(SettingActivity.SettingsFragment.KEY_INIT_POSITION, null);
         String sExPosition = sharedPref.getString(SettingActivity.SettingsFragment.KEY_EX_POSITION, null);
 
-        if (sInitPosition == null || sExPosition == null || sfloor == null) {
+        if (sInitPosition == null || sExPosition == null || sfloor == null || sSN == null) {
             //未进行相应设置,跳转到设置界面
             Intent intent1 = new Intent(this, SettingActivity.class);
             startActivity(intent1);
         } else {
+
+            sn = sSN;
 
             try {
                 initFloor = floor = Integer.parseInt(sfloor);
@@ -132,10 +151,12 @@ public class ExActivity extends ClientActivity {
         }
     }
 
+    private boolean isInited;
     @Override
     protected void onStart() {
         super.onStart();
-        doSetting();
+        isInited = false;
+        checkSetting();
     }
 
     @Override
@@ -173,9 +194,11 @@ public class ExActivity extends ClientActivity {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void handleStandby() {
-        handler.post(new Runnable() {
+        if (!isInited)
+            handler.post(new Runnable() {
             @Override
             public void run() {
+                isInited = true;
                 initFragment.ready();
             }
         });
@@ -193,6 +216,11 @@ public class ExActivity extends ClientActivity {
         ft.replace(R.id.container,  moveFragment);
         ft.commit();
 
+        String nowTime = System.currentTimeMillis() + "";
+        String code = nowTime.substring(nowTime.length() - 6);
+        customer.setCode(code);
+        SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.START, "{\"code\":\" "+ code + "\"}");
+
         setArriveHandler(new ArriveHandler() {
             @Override
             public void hanldArrive() {
@@ -201,9 +229,13 @@ public class ExActivity extends ClientActivity {
                 ft.replace(R.id.container,  ShowResultFragment.newInstance(customer));
                 ft.commit();
 
-                SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.GET_EX);
+                String code = customer.getCode();
+                SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.ARRIVE, "{\"code\":\" "+ code + "\"}");
+                ssm.startSpeakingMulti(customer.getName() + ",您有"+customer.getExCount()+"件快递到了,请输入取货码领取", 2000, 2);
 
-                ssm.startSpeakingMulti(customer.getName() + ",您有"+customer.getExCount()+"件快递到了,请取件", 2000, 2);
+                Record record = new Record(sn, "迎宾", location);
+                recordData(record);
+
                 setArriveHandler(null);
             }
         });
@@ -255,7 +287,38 @@ public class ExActivity extends ClientActivity {
                 }
                 ft.commit();
 
+                recordData(failedRecords);
+
                 setArriveHandler(null);
+            }
+        });
+    }
+
+    private void recordData(final Record record) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    MySqlUtil.insertData(record);
+                } catch (SQLException e) {
+                    if (failedRecords.size() >= 500)
+                        failedRecords.clear();
+                    failedRecords.add(record);
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void recordData(final List<Record> records) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    MySqlUtil.insertData(records);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -276,12 +339,14 @@ public class ExActivity extends ClientActivity {
                 case END_EX:
                     ssm.stopSpeakingLoop();
 
+                    //派送失败处理
                     if (msg.obj != null) {
                         Customer customer = (Customer) msg.obj;
                         failedCustomers.add(customer);
-                        SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.EX_FAIL);
+                        SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.EX_FAIL, null);
                     }
 
+                    //接着送下一个快递或返回
                     if (!customers.isEmpty()) {
                         express(customers.get(0));
                         customers.remove(0);

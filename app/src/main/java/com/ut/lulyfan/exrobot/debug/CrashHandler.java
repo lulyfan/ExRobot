@@ -7,12 +7,17 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.util.Log;
 
+import com.ut.lulyfan.exrobot.model.Record;
+import com.ut.lulyfan.exrobot.ui.ExActivity;
+import com.ut.lulyfan.exrobot.util.MySqlUtil;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.Field;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -124,7 +129,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		}
 	}
 
-	private String saveCrashInfo2File(Throwable ex) {
+	private String saveCrashInfo2File(final Throwable ex) {
 		StringBuffer sb = new StringBuffer();
 		for (Map.Entry<String, String> entry : info.entrySet()) {
 			String key = entry.getKey();
@@ -145,6 +150,19 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		sb.append(result);
 		Log.e("crash", result);
 		LogInFile.write(path, result);
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Record record = new Record(ExActivity.sn, "APP崩溃", ExActivity.location);
+				record.setDescription(ex.getMessage());
+				try {
+					MySqlUtil.insertData(record);
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 		return null;
 	}
 }
