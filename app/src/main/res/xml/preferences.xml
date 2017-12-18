@@ -16,6 +16,12 @@
             android:defaultValue="1" />
 
         <EditTextPreference
+            android:key="area"
+            android:title="机器人的区域"
+            android:dialogTitle="机器人的区域，比如：金地"
+            android:defaultValue="金地" />
+
+        <EditTextPreference
             android:key="initPosition"
             android:title="设置初始化坐标"
             android:dialogTitle="坐标格式:X,Y,Z,W" />

@@ -14,23 +14,20 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:replace="icon">
-        <activity android:name=".ui.SettingActivity" >
+        <activity android:name=".ui.SettingActivity">
         </activity>
         <activity android:name=".ros.MyRosActivity" />
         <activity
             android:name=".ui.ExActivity"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask" />
+        <activity android:name=".ros.MasterActivity" />
+        <activity android:name=".ros.ClientActivity" />
+        <activity android:name=".ui.RootActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity android:name=".ros.MasterActivity" >
-
-        </activity>
-        <activity android:name=".ros.ClientActivity">
-
         </activity>
     </application>
 

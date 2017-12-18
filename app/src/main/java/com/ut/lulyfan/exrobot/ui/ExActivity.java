@@ -11,10 +11,10 @@ import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.widget.Toast;
 
 import com.iflytek.cloud.SpeechError;
 import com.ut.lulyfan.exrobot.R;
+import com.ut.lulyfan.exrobot.debug.LogInFile;
 import com.ut.lulyfan.exrobot.model.Customer;
 import com.ut.lulyfan.exrobot.model.Record;
 import com.ut.lulyfan.exrobot.ros.ClientActivity;
@@ -51,7 +51,7 @@ public class ExActivity extends ClientActivity {
     SpeechSynthesizeManager ssm;
     static Executor executor = Executors.newCachedThreadPool();
     public static String sn;
-    public static String location = "金地";
+    public static String area;
     private List<Record> failedRecords = new ArrayList<>();
 
 
@@ -82,8 +82,7 @@ public class ExActivity extends ClientActivity {
             }
         });
 
-        Record record = new Record(sn, "注册", location);
-        recordData(record);
+        getSetting();
     }
 
 
@@ -106,49 +105,28 @@ public class ExActivity extends ClientActivity {
         return super.dispatchTouchEvent(ev);
     }
 
-    private void checkSetting() {
+    private void getSetting() {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String sSN = sharedPref.getString(SettingActivity.SettingsFragment.KEY_SN, null);
-        String sfloor = sharedPref.getString(SettingActivity.SettingsFragment.KEY_FLOOR, null);
+        String sfloor = sharedPref.getString(SettingActivity.SettingsFragment.KEY_FLOOR, "1");
+        String sArea = sharedPref.getString(SettingActivity.SettingsFragment.KEY_AREA, "金地");
         String sInitPosition = sharedPref.getString(SettingActivity.SettingsFragment.KEY_INIT_POSITION, null);
         String sExPosition = sharedPref.getString(SettingActivity.SettingsFragment.KEY_EX_POSITION, null);
 
-        if (sInitPosition == null || sExPosition == null || sfloor == null || sSN == null) {
-            //未进行相应设置,跳转到设置界面
-            Intent intent1 = new Intent(this, SettingActivity.class);
-            startActivity(intent1);
-        } else {
+        sn = sSN;
+        area = sArea;
 
-            sn = sSN;
+        String[] tmp = sInitPosition.split(",");
+        initPosition[0] = Double.valueOf(tmp[0]);
+        initPosition[1] = Double.valueOf(tmp[1]);
+        initPosition[2] = Double.valueOf(tmp[2]);
+        initPosition[3] = Double.valueOf(tmp[3]);
 
-            try {
-                initFloor = floor = Integer.parseInt(sfloor);
-            } catch (Exception e) {
-                Toast.makeText(this, "楼层数据异常,请重新设置", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(this, SettingActivity.class);
-                startActivity(intent);
-                return;
-            }
-
-            try {
-                String[] tmp = sInitPosition.split(",");
-                initPosition[0] = Double.valueOf(tmp[0]);
-                initPosition[1] = Double.valueOf(tmp[1]);
-                initPosition[2] = Double.valueOf(tmp[2]);
-                initPosition[3] = Double.valueOf(tmp[3]);
-
-                tmp = sExPosition.split(",");
-                exPosition[0] = Double.valueOf(tmp[0]);
-                exPosition[1] = Double.valueOf(tmp[1]);
-                exPosition[2] = Double.valueOf(tmp[2]);
-                exPosition[3] = Double.valueOf(tmp[3]);
-
-            } catch (Exception e) {
-                Toast.makeText(this, "坐标数据异常,请重新设置", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(this, SettingActivity.class);
-                startActivity(intent);
-            }
-        }
+        tmp = sExPosition.split(",");
+        exPosition[0] = Double.valueOf(tmp[0]);
+        exPosition[1] = Double.valueOf(tmp[1]);
+        exPosition[2] = Double.valueOf(tmp[2]);
+        exPosition[3] = Double.valueOf(tmp[3]);
     }
 
     private boolean isInited;
@@ -156,7 +134,6 @@ public class ExActivity extends ClientActivity {
     protected void onStart() {
         super.onStart();
         isInited = false;
-        checkSetting();
     }
 
     @Override
@@ -233,7 +210,7 @@ public class ExActivity extends ClientActivity {
                 SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.ARRIVE, "{\"code\":\" "+ code + "\"}");
                 ssm.startSpeakingMulti(customer.getName() + ",您有"+customer.getExCount()+"件快递到了,请输入取货码领取", 2000, 2);
 
-                Record record = new Record(sn, "迎宾", location);
+                Record record = new Record(sn, "迎宾", area);
                 recordData(record);
 
                 setArriveHandler(null);
@@ -305,6 +282,7 @@ public class ExActivity extends ClientActivity {
                         failedRecords.clear();
                     failedRecords.add(record);
                     e.printStackTrace();
+                    LogInFile.write("/sdcard/debug.txt", e.getMessage());
                 }
             }
         });
@@ -364,6 +342,9 @@ public class ExActivity extends ClientActivity {
                     break;
 
                 case INIT:
+                    Record record = new Record(sn, "注册", area);
+                    recordData(record);
+
                     initPoseTalker.sendMsg(initPosition[0], initPosition[1], initPosition[2], initPosition[3]);
                     handler.postDelayed(new Runnable() {
                         @Override

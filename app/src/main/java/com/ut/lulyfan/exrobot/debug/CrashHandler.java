@@ -154,7 +154,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				Record record = new Record(ExActivity.sn, "APP崩溃", ExActivity.location);
+				Record record = new Record(ExActivity.sn, "APP崩溃", ExActivity.area);
 				record.setDescription(ex.getMessage());
 				try {
 					MySqlUtil.insertData(record);

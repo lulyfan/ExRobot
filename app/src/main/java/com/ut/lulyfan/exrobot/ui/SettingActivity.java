@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -43,11 +44,39 @@ public class SettingActivity extends Activity {
     public void onClick(View v) {
         if (v.getId() == R.id.sure)
         {
-            Intent intent = new Intent(this, ExActivity.class);
-            startActivity(intent);
+            if (checkSetting(this)) {
+                Intent intent = new Intent(this, ExActivity.class);
+                startActivity(intent);
+            }
         } else if (v.getId() == R.id.importAddress) {
             showFileChooser();
         }
+    }
+
+    public static boolean checkSetting(Context context) {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        String sSN = sharedPref.getString(SettingActivity.SettingsFragment.KEY_SN, null);
+        String sfloor = sharedPref.getString(SettingActivity.SettingsFragment.KEY_FLOOR, "1");
+        String sArea = sharedPref.getString(SettingsFragment.KEY_AREA, "金地");
+        String sInitPosition = sharedPref.getString(SettingActivity.SettingsFragment.KEY_INIT_POSITION, null);
+        String sExPosition = sharedPref.getString(SettingActivity.SettingsFragment.KEY_EX_POSITION, null);
+
+        if (sInitPosition == null || sExPosition == null || sSN == null) {
+            //未进行相应设置
+            Toast.makeText(context, "请先填写相关配置", Toast.LENGTH_SHORT).show();
+        } else {
+
+            try {
+                sInitPosition.split(",");
+                sExPosition.split(",");
+
+                return true;
+
+            } catch (Exception e) {
+                Toast.makeText(context, "坐标数据异常,请重新设置", Toast.LENGTH_LONG).show();
+            }
+        }
+        return false;
     }
 
     private static final int FILE_SELECT_CODE = 0;
@@ -130,6 +159,7 @@ public class SettingActivity extends Activity {
         public static final String KEY_INIT_POSITION = "initPosition";
         public static final String KEY_EX_POSITION = "exPosition";
         public static final String KEY_SN = "sn";
+        public static final String KEY_AREA = "area";
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -146,6 +176,7 @@ public class SettingActivity extends Activity {
             SharedPreferences sp = getPreferenceManager().getSharedPreferences();
             findPreference(KEY_SN).setSummary(sp.getString(KEY_SN, "未知"));
             findPreference(KEY_FLOOR).setSummary(sp.getString(KEY_FLOOR, "1"));
+            findPreference(KEY_AREA).setSummary(sp.getString(KEY_AREA, "未知"));
             findPreference(KEY_INIT_POSITION).setSummary(sp.getString(KEY_INIT_POSITION, ""));
             findPreference(KEY_EX_POSITION).setSummary(sp.getString(KEY_EX_POSITION, ""));
             getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
@@ -171,6 +202,12 @@ public class SettingActivity extends Activity {
                 Preference floorSP = findPreference(key);
                 String floor = sharedPreferences.getString(key, "1");
                 floorSP.setSummary(floor);
+
+            }  else if (key.equals(KEY_AREA)) {
+
+                Preference sp = findPreference(key);
+                String str = sharedPreferences.getString(key, "未知");
+                sp.setSummary(str);
 
             }  else if (key.equals(KEY_INIT_POSITION)) {
 
