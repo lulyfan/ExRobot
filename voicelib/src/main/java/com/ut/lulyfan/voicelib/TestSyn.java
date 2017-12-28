@@ -36,8 +36,9 @@ public class TestSyn extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (speechSynthesizeManager != null)
+        if (speechSynthesizeManager != null) {
             speechSynthesizeManager.destory();
+        }
     }
 
     Handler handler = new Handler() {

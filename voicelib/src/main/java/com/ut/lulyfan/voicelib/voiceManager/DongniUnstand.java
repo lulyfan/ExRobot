@@ -100,15 +100,17 @@ public class DongniUnstand {
                         e.printStackTrace();
                     }
                 }
-                if (textUnderstandListener != null)
+                if (textUnderstandListener != null) {
                     textUnderstandListener.handleTextUnderstandResult(result, null);
+                }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Log.i("Dongni", "failed:"+t.getMessage());
-                if (textUnderstandListener != null)
-                    textUnderstandListener.handleTextUnderstandResult(null, "failed connect to Dongni:"+t.getMessage());
+                if (textUnderstandListener != null) {
+                    textUnderstandListener.handleTextUnderstandResult(null, "failed connect to Dongni:" + t.getMessage());
+                }
             }
         });
     }
@@ -122,8 +124,9 @@ public class DongniUnstand {
             @Override
             public void run() {
                 String result = setScene(scene);
-                if (handler != null)
+                if (handler != null) {
                     Message.obtain(handler, VoiceConstant.MSG_SET_SCENE, result).sendToTarget();
+                }
                 Log.i("Dongni", "Dongni set scene result:"+result);
             }
         });
@@ -143,13 +146,15 @@ public class DongniUnstand {
         Call<ResponseBody> call = setScene.setScene(robot.getSn(), scene);
         try {
             Response<ResponseBody> response = call.execute();
-            if (response.body() == null)
+            if (response.body() == null) {
                 return "response = null";
+            }
             String str = response.body().string();
             JSONObject root = new JSONObject(str);
             int code = root.getInt("code");
-            if (code == 200)
+            if (code == 200) {
                 return "success";
+            }
             String message = root.getString("message");
             return code+":"+message;
 
@@ -175,8 +180,9 @@ public class DongniUnstand {
             String str = response.body().string();
             JSONObject root = new JSONObject(str);
             int code = root.getInt("code");
-            if (code == 200)
+            if (code == 200) {
                 return "success";
+            }
             String message = root.getString("message");
             return code+":"+message;
         } catch (IOException e) {
@@ -193,8 +199,9 @@ public class DongniUnstand {
             @Override
             public void run() {
                 String result = getRobotIP();
-                if (handler != null)
+                if (handler != null) {
                     Message.obtain(handler, VoiceConstant.MSG_GET_ROBOT_IP, result).sendToTarget();
+                }
                 Log.i("Dongni", "Robot IP:"+result);
             }
         });

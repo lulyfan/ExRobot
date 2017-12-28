@@ -85,7 +85,7 @@ public class ShowResultFragment extends Fragment {
                     case BUTTON_SURE:
                         String input = tv_password.getText().toString();
 
-                        if (input.equals("")) {
+                        if ("".equals(input)) {
                             Toast.makeText(getActivity(), "请先输入密码", Toast.LENGTH_SHORT).show();
                             return;
                         }
@@ -100,7 +100,7 @@ public class ShowResultFragment extends Fragment {
                         keyboardView.setFocusable(false);
                         showResult.setText("请领取快递,并关闭厢门");
                         countdownTask.cancel(true);
-                        ((ExActivity)getActivity()).executor.execute(new Runnable() {
+                        ExActivity.executor.execute(new Runnable() {
                             @Override
                             public void run() {
                                 getEx();
@@ -205,8 +205,9 @@ public class ShowResultFragment extends Fragment {
             int seconds = params[0];
             while (seconds > 0) {
 
-                if (isCancelled())
+                if (isCancelled()) {
                     break;
+                }
 
                 publishProgress(seconds);
                 try {

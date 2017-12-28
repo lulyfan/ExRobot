@@ -23,8 +23,9 @@ public class CustomerDBUtil {
     private static CustomerDBUtil customerDBUtil;
 
     public synchronized static CustomerDBUtil getInstance(DaoSession daoSession) {
-        if (customerDBUtil == null)
+        if (customerDBUtil == null) {
             customerDBUtil = new CustomerDBUtil(daoSession);
+        }
         return customerDBUtil;
     }
 
@@ -33,8 +34,9 @@ public class CustomerDBUtil {
     }
 
     private CustomerDBUtil(DaoSession daoSession) {
-        if (daoSession == null)
+        if (daoSession == null) {
             throw new NullPointerException("daoSession = null!");
+        }
 
         this.daoSession = daoSession;
         customerDao = this.daoSession.getCustomerDao();

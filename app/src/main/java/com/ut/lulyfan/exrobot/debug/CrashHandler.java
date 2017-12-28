@@ -40,8 +40,9 @@ public class CrashHandler implements UncaughtExceptionHandler {
 	/** 保证只有一个CrashHandler实例 */
 	private CrashHandler() {
 		File file = new File(path);
-		if (file.exists())
-			file.delete();
+		if (file.exists()) {
+            file.delete();
+        }
 	}
 
 	/** 获取CrashHandler实例 ,单例模式 */
@@ -63,6 +64,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 	/**
 	 * 当UncaughtException发生时会转入该重写的方法来处理
 	 */
+	@Override
 	public void uncaughtException(Thread thread, Throwable ex) {
 		if (!handleException(ex) && mDefaultHandler != null) {
 			// 如果自定义的没有处理则让系统默认的异常处理器来处理
@@ -84,8 +86,9 @@ public class CrashHandler implements UncaughtExceptionHandler {
 	 * @return true:如果处理了该异常信息;否则返回false.
 	 */
 	public boolean handleException(Throwable ex) {
-		if (ex == null)
-			return false;
+		if (ex == null) {
+            return false;
+        }
 		// 收集设备参数信息
 		//collectDeviceInfo(mContext);
 		// 保存日志文件

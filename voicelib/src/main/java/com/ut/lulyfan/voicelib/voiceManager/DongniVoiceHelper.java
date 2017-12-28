@@ -70,8 +70,9 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
     }
 
     public static synchronized DongniVoiceHelper getInstance(Context context, Handler handler, ViewGroup parent, UTRobot robot) {
-        if (voiceHelper == null)
+        if (voiceHelper == null) {
             voiceHelper = new DongniVoiceHelper(context, handler, parent, robot);
+        }
         return voiceHelper;
     }
 
@@ -155,13 +156,16 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
 
                 case VoiceConstant.MSG_DICATE_VOLUME:         //语音听写音量变化消息
                     long gapTime = System.currentTimeMillis() - lastTime;
-                    if (gapTime < 200)
+                    if (gapTime < 200) {
                         return;
+                    }
                     int volume = 0;
-                    if (msg.obj != null)
-                        volume = (int)(msg.obj);
-                    if (volume > 0)
+                    if (msg.obj != null) {
+                        volume = (int) (msg.obj);
+                    }
+                    if (volume > 0) {
                         volume = volume / 4 + 1;
+                    }
                     voiceView.setVolume(volume);
                     lastTime = System.currentTimeMillis();
                     break;
@@ -174,12 +178,13 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
 
                 case VoiceConstant.MSG_SET_SCENE:
                     String result = (String) msg.obj;
-                    if (result.equals("success")) {
+                    if ("success".equals(result)) {
                         isInited = true;
                         startVoice();
                     }
-                    else
-                        tipView.setText(result+"\n语音初始化失败,点击语音图标重试");
+                    else {
+                        tipView.setText(result + "\n语音初始化失败,点击语音图标重试");
+                    }
                     break;
             }
         }
@@ -193,8 +198,9 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
         }
         tipView.append("\n识别结果:"+text);
         dicateText = text;
-        if (!localUnderstand(text))
+        if (!localUnderstand(text)) {
             understand.understand(text);
+        }
     }
 
     private boolean localUnderstand(String text) {
@@ -251,8 +257,9 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
         }
 
         tipView.setText(tipView.getText().toString().replace("\n语音播放中...\nPS:点击图标可关闭语音播放", ""));
-        if (!isStoped)
+        if (!isStoped) {
             speechDicateManager.startDicate();
+        }
     }
 
     @Override
@@ -291,8 +298,9 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
                         String dongniDest = robot.getScene();
                         for (int i=1; i<=categoryNum; i++) {
                             String temp =  item0.getString("category"+i);
-                            if (temp.equals(""))
+                            if ("".equals(temp)) {
                                 temp = "综合";
+                            }
                             dongniDest += ":"+temp;
                         }
 
@@ -316,8 +324,9 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
                             int categoryNum = item.getInt("categoryNum");
                             for (int j=1; j<=categoryNum; j++) {
                                 String category = "category"+j;
-                                if (!category.equals(intentCategoty))
+                                if (!category.equals(intentCategoty)) {
                                     detailData.add(item.getString(category));
+                                }
                             }
                         }
 
@@ -381,8 +390,9 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
     //判断该房间是否为本楼层的
     private boolean isContainRoom(String rooms[], String room) {
         for (int i=0; i<rooms.length; i++) {
-            if (rooms[i] == null)
+            if (rooms[i] == null) {
                 continue;
+            }
             if (room.equals(rooms[i])) {
                 return true;
             }
@@ -392,15 +402,16 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
 
     @Override
     public void onUp() {
-        if (state == SPEAKING)
+        if (state == SPEAKING) {
             speechDicateManager.startDicate();
+        }
     }
 
     @Override
     public void onDown() {
-        if (state == INACTIVE)
+        if (state == INACTIVE) {
             initVoice();
-        else if (state == SPEAKING) {
+        } else if (state == SPEAKING) {
             speechSynthesizeManager.stopSpeaking();
             voiceView.setState(3);
         }
@@ -412,16 +423,19 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
 
     //pauseSyn: true: 暂停合成   false:不暂停合成
     public void pauseVoice(boolean pauseSyn) {
-        if (!isInited)
+        if (!isInited) {
             return;
-
-        if (pauseSyn) {
-            if (speechSynthesizeManager.isInSession())
-                speechSynthesizeManager.stopSpeaking();
         }
 
-        if (speechDicateManager.isInSession())
+        if (pauseSyn) {
+            if (speechSynthesizeManager.isInSession()) {
+                speechSynthesizeManager.stopSpeaking();
+            }
+        }
+
+        if (speechDicateManager.isInSession()) {
             speechDicateManager.stopDicate();
+        }
         speechDicateManager.setStoped(true);
         voiceView.cancelRecognize();
 
@@ -442,8 +456,9 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
     }
 
     public void startVoice() {
-        if (errorTimer == null)
+        if (errorTimer == null) {
             errorTimer = new Timer();
+        }
         speechDicateManager.initDicate();
         voiceView.setEnableTimer(true);
     }

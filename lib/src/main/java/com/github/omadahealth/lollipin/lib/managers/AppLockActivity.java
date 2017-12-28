@@ -390,6 +390,7 @@ public abstract class AppLockActivity extends PinActivity implements KeyboardBut
     protected void onPinCodeError() {
         onPinFailure(mAttempts++);
         Thread thread = new Thread() {
+            @Override
             public void run() {
                 mPinCode = "";
                 mPinCodeRoundView.refresh(mPinCode.length());

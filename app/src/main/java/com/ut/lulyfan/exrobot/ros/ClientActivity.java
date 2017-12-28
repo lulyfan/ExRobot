@@ -55,8 +55,9 @@ public class ClientActivity extends RosActivity {
             public void onNewMessage(Bool bool) {
                 if (bool.getData()) {
                     System.out.println("receive arrive msg");
-                    if (arriveHandler != null)
+                    if (arriveHandler != null) {
                         arriveHandler.hanldArrive();
+                    }
                 }
             }
         });

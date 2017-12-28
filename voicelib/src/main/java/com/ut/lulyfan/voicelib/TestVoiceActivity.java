@@ -30,8 +30,9 @@ public class TestVoiceActivity extends AppCompatActivity {
             voiceHelper = DongniVoiceHelper.getInstance();
             voiceHelper.setVoiceViewAndHandle(this, voiceContainer, handler);
         }
-        else
+        else {
             voiceHelper = DongniVoiceHelper.getInstance(this, handler, voiceContainer, utRobot);
+        }
 
         voiceHelper.initVoice();
     }
@@ -44,8 +45,9 @@ public class TestVoiceActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if (voiceHelper != null)
+        if (voiceHelper != null) {
             voiceHelper.pauseVoice();
+        }
         voiceHelper = null;
     }
 

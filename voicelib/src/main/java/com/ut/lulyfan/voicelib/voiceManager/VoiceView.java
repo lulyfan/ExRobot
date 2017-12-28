@@ -168,8 +168,9 @@ public class VoiceView extends View {
                 public void run() {
                     //Log.i(TAG, "timer running...");
                     mProgress++;
-                    if (mProgress == 360)
+                    if (mProgress == 360) {
                         mProgress = 0;
+                    }
                     postInvalidate();
                 }
             }, 0, 10);
@@ -231,10 +232,11 @@ public class VoiceView extends View {
         //head
         mPaint.reset();
         mPaint.setAntiAlias(true);
-        if (state == INACTIVE)
+        if (state == INACTIVE) {
             mPaint.setColor(Color.GRAY);
-        else
+        } else {
             mPaint.setARGB(255, 61, 169, 237);
+        }
         float width=30 * s;
         float height=width / 2;
         float x1=centre-width/2, y1=centre-height/2;
@@ -297,14 +299,17 @@ public class VoiceView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.i(TAG, "event:"+event.getAction());
-        if (!isHandleTouch)
+        if (!isHandleTouch) {
             return false;
+        }
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            if (listener != null)
+            if (listener != null) {
                 listener.onDown();
+            }
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
-            if (listener != null)
+            if (listener != null) {
                 listener.onUp();
+            }
         }
         return true;
     }

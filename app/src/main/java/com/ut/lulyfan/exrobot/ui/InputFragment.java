@@ -78,7 +78,7 @@ public class InputFragment extends Fragment {
                     case BUTTON_SURE:
                         String phoneNum = et_phoneNum.getText().toString();
 
-                        if (phoneNum.equals("")) {
+                        if ("".equals(phoneNum)) {
                             Toast.makeText(getActivity(), "请先输入手机号", Toast.LENGTH_SHORT).show();
                             return;
                         }
@@ -145,12 +145,12 @@ public class InputFragment extends Fragment {
 //                        startEx.setCompoundDrawables(drawable, null, null, null);
 
                         List<Customer> customers = ((ExListAdapter)recyclerView.getAdapter()).getExList();
-                        if (customers.size() == 0)
+                        if (customers.size() == 0) {
                             Toast.makeText(getActivity(), "未添加快递任务", Toast.LENGTH_SHORT).show();
-                        else {
-                            if (doorUtil.check() == DoorUtil.CLOSED)
+                        } else {
+                            if (doorUtil.check() == DoorUtil.CLOSED) {
                                 Message.obtain(handler, ExActivity.START_EX, customers).sendToTarget();
-                            else {
+                            } else {
                                 Toast.makeText(getActivity(), "请关闭厢门", Toast.LENGTH_SHORT).show();
                                 ssm.startSpeaking("请关闭厢门");
                             }
@@ -167,7 +167,7 @@ public class InputFragment extends Fragment {
 
     private void putEx() {
         if (doorUtil.check() == DoorUtil.CLOSED) {
-            ((ExActivity) getActivity()).executor.execute(new Runnable() {
+            ExActivity.executor.execute(new Runnable() {
                 @Override
                 public void run() {
                     doorUtil.open();

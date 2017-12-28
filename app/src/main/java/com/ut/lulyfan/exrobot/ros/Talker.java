@@ -64,8 +64,9 @@ public abstract class Talker<T> extends AbstractNodeMain {
                 // This CancellableLoop will be canceled automatically when the node shuts
                 // down.
                 System.out.println("onNewSubscriber");
-                if (isInit)
+                if (isInit) {
                     return;
+                }
 
                 isInit = true;
                 connectedNode.executeCancellableLoop(new CancellableLoop() {
@@ -78,8 +79,9 @@ public abstract class Talker<T> extends AbstractNodeMain {
                             publisher.publish(msg);
                             System.out.println(topic_name + " publish msg");
 
-                            if (sendCount != LOOP)
+                            if (sendCount != LOOP) {
                                 sendCount--;
+                            }
 
                             Thread.sleep(gapTime);
                         }

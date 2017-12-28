@@ -155,8 +155,9 @@ public class ExActivity extends ClientActivity {
     @Override
     protected void handleBattery(final double battery) {
 
-        if (System.currentTimeMillis() - batteryUpdateTime < 5000)
+        if (System.currentTimeMillis() - batteryUpdateTime < 5000) {
             return;
+        }
 
         batteryUpdateTime = System.currentTimeMillis();
         handler.post(new Runnable() {
@@ -171,14 +172,15 @@ public class ExActivity extends ClientActivity {
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void handleStandby() {
-        if (!isInited)
+        if (!isInited) {
             handler.post(new Runnable() {
-            @Override
-            public void run() {
-                isInited = true;
-                initFragment.ready();
-            }
-        });
+                @Override
+                public void run() {
+                    isInited = true;
+                    initFragment.ready();
+                }
+            });
+        }
     }
 
     //快递任务
@@ -256,9 +258,9 @@ public class ExActivity extends ClientActivity {
             public void hanldArrive() {
                 //切换到快递送达的结果fragment
                 FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
-                if (failedCustomers.isEmpty())
-                    ft.replace(R.id.container,  new InputFragment());
-                else {
+                if (failedCustomers.isEmpty()) {
+                    ft.replace(R.id.container, new InputFragment());
+                } else {
                     ssm.startSpeaking("有未签收快递，请查看");
                     ft.replace(R.id.container, FailedFragment.getInstance(failedCustomers));
                 }
@@ -278,8 +280,9 @@ public class ExActivity extends ClientActivity {
                 try {
                     MySqlUtil.insertData(record);
                 } catch (SQLException e) {
-                    if (failedRecords.size() >= 500)
+                    if (failedRecords.size() >= 500) {
                         failedRecords.clear();
+                    }
                     failedRecords.add(record);
                     e.printStackTrace();
                     LogInFile.write("/sdcard/debug.txt", e.getMessage());

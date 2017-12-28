@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -40,9 +41,12 @@ public class MySqlUtil {
 
     public static void insertData(List<Record> records) throws SQLException {
         Connection connection = openDB();
-        for (Record record : records) {
+
+        Iterator<Record> iterator = records.iterator();
+        while (iterator.hasNext()) {
+            Record record = iterator.next();
             insertData(connection, record.getSn(), record.getTask(), record.getDescription(), record.getLocation(), record.getTime());
-            records.remove(record);
+            iterator.remove();
         }
         connection.close();
     }

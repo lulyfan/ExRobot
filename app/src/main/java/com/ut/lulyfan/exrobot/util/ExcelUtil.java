@@ -48,17 +48,17 @@ public class ExcelUtil {
                         phoneNumIndex = colNum;
                     } else if (str.contains("姓名") || str.contains("名字")) {
                         nameIndex = colNum;
-                    } else if (str.equals("部门")) {
+                    } else if ("部门".equals(str)) {
 
-                    } else if (str.equals("区域") || str.equals("座位")) {
+                    } else if ("区域".equals(str) || "座位".equals(str)) {
                         regionIndex = colNum;
-                    } else if (str.equalsIgnoreCase("x")) {
+                    } else if ("x".equalsIgnoreCase(str)) {
                         xIndex = colNum;
-                    } else if (str.equalsIgnoreCase("y")) {
+                    } else if ("y".equalsIgnoreCase(str)) {
                         yIndex = colNum;
-                    } else if (str.equalsIgnoreCase("w")) {
+                    } else if ("w".equalsIgnoreCase(str)) {
                         wIndex = colNum;
-                    } else if (str.equalsIgnoreCase("z")) {
+                    } else if ("z".equalsIgnoreCase(str)) {
                         zIndex = colNum;
                     }
                 }
@@ -66,8 +66,9 @@ public class ExcelUtil {
             } else {
 
                 if (row.getCell(xIndex) != null) {
-                    if (formatter.formatCellValue(row.getCell(xIndex)).equals(""))
+                    if ("".equals(formatter.formatCellValue(row.getCell(xIndex)))) {
                         continue;
+                    }
                 }
 
                 Customer customer = new Customer();

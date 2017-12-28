@@ -28,8 +28,9 @@ public class MyApplication extends MultiDexApplication{
 
         String dir = Environment.getExternalStorageDirectory().getAbsolutePath()+"/UTRobot";
         File file = new File(dir);
-        if (!file.exists())
+        if (!file.exists()) {
             file.mkdirs();
+        }
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this, dir + "/ExRobot_db");
         Database database = helper.getWritableDb();
         DaoSession daoSession = new DaoMaster(database).newSession();

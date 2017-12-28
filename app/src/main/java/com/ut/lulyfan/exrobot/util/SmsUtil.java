@@ -62,8 +62,9 @@ public class SmsUtil {
         request.setTemplateCode(templateCode);
         //可选:模板中的变量替换JSON串,如模板内容为"亲爱的${name},您的验证码为${code}"时,此处的值为
 //        request.setTemplateParam("{\"name\":\"Tom\", \"code\":\"123\"}");
-        if (para != null && !para.equals(""))
+        if (para != null && !"".equals(para)) {
             request.setTemplateParam(para);
+        }
         //选填-上行短信扩展码(无特殊需求用户请忽略此字段)
         //request.setSmsUpExtendCode("90997");
 
@@ -123,7 +124,7 @@ public class SmsUtil {
         Thread.sleep(3000L);
 
         //查明细
-        if(response.getCode() != null && response.getCode().equals("OK")) {
+        if(response.getCode() != null && "OK".equals(response.getCode())) {
             QuerySendDetailsResponse querySendDetailsResponse = querySendDetails(response.getBizId(), phoneNum);
             System.out.println("短信明细查询接口返回数据----------------");
             System.out.println("Code=" + querySendDetailsResponse.getCode());

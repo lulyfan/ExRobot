@@ -113,8 +113,9 @@ public class SettingActivity extends Activity {
                         CustomerDBUtil customerDBUtil = CustomerDBUtil.getInstance();
                         customerDBUtil.deleteAll();
 
-                        for (Customer customer : customers)
+                        for (Customer customer : customers) {
                             customerDBUtil.write(customer);
+                        }
                         Toast.makeText(this, "数据导入完成", Toast.LENGTH_SHORT).show();
 
                     } catch (URISyntaxException e) {

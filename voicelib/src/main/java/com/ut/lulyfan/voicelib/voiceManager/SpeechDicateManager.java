@@ -63,8 +63,9 @@ public class SpeechDicateManager {
 
     private void getLexicon(List<String> words) {
         UserWords orderWords = new UserWords();
-        for (String word : words)
+        for (String word : words) {
             orderWords.putWord("robotWord", word);
+        }
 
         int ret = mIat.updateLexicon("userword", orderWords.toString(), lexiconListener);
         if(ret != ErrorCode.SUCCESS){
@@ -112,8 +113,9 @@ public class SpeechDicateManager {
             startDicate();
 //            mIatDialog = new RecognizerDialog(wContext.get(), mInitListener);
 //            mIatDialog.setListener(mRecognizerDialogListener);
-        } else
+        } else {
             startDicate();
+        }
     }
 
     public void setStoped(boolean stoped) {
@@ -122,8 +124,9 @@ public class SpeechDicateManager {
 
     public void startDicate() {
 //        mIatDialog.show();
-        if (!isStoped)
+        if (!isStoped) {
             mIat.startListening(mRecoListener);
+        }
     }
 
     public boolean isInSession() {
@@ -145,48 +148,61 @@ public class SpeechDicateManager {
     }
 
     public void destory() {
-        if (mIat.isListening())
+        if (mIat.isListening()) {
             mIat.cancel();
+        }
         boolean result = mIat.destroy();
     }
 
     private RecognizerListener mRecoListener = new RecognizerListener() {
         //一般情况下会通过onResults接口多次返回结果，完整的识别内容是多次结果的累加；
         //isLast等于true时会话结束。
+        @Override
         public void onResult(RecognizerResult results, boolean isLast) {
             String tmp = parseIatResult(results.getResultString());
             result += tmp;
             if (isLast) {
-                if (handler != null)
+                if (handler != null) {
                     Message.obtain(handler, VoiceConstant.MSG_DICATE_RESULT, result).sendToTarget();
-                if (dicateListener != null)
+                }
+                if (dicateListener != null) {
                     dicateListener.handleDicateResult(result, null);
+                }
                 result = "";
             }
         }
 
+        @Override
         public void onError(SpeechError error) {
-            if (dicateListener != null)
+            if (dicateListener != null) {
                 dicateListener.handleDicateResult(null, error);
+            }
         }
 
+        @Override
         public void onBeginOfSpeech() {
-            if (handler != null)
+            if (handler != null) {
                 Message.obtain(handler, VoiceConstant.MSG_DICATE_LISTENBEGIN).sendToTarget();
+            }
         }
 
+        @Override
         public void onVolumeChanged(int volume, byte[] data) {
             toast.setText("volume:"+volume);
             toast.show();
-            if (handler != null)
+            if (handler != null) {
                 Message.obtain(handler, VoiceConstant.MSG_DICATE_VOLUME, volume).sendToTarget();
+            }
         }
 
+        @Override
         public void onEndOfSpeech() {
-            if (handler != null)
+            if (handler != null) {
                 Message.obtain(handler, VoiceConstant.MSG_DICATE_LISTENEND).sendToTarget();
+            }
         }
 
+        @Override
         public void onEvent(int eventType, int arg1, int arg2, Bundle obj) {
         }
     };
@@ -206,8 +222,9 @@ public class SpeechDicateManager {
         @Override
         public void onError(SpeechError speechError) {
             Log.i(TAG, "error:" + speechError.getPlainDescription(true));
-            if (dicateListener != null)
+            if (dicateListener != null) {
                 dicateListener.handleDicateResult(null, speechError);
+            }
         }
     };
 

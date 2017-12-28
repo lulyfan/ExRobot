@@ -26,14 +26,16 @@ public class LogInFile {
     }
 
     public synchronized static boolean write(String path, String str, boolean flag) {
-        if (!isExternalStorageWritable())
+        if (!isExternalStorageWritable()) {
             return false;
+        }
 
         try {
             FileOutputStream out = new FileOutputStream(path, true);
             out.write(str.getBytes());
-            if (flag)
-                out.write(("    time:"+DateFormat.getInstance().format(new Date())+"\n").getBytes());
+            if (flag) {
+                out.write(("    time:" + DateFormat.getInstance().format(new Date()) + "\n").getBytes());
+            }
             out.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();

@@ -56,13 +56,15 @@ public class DotView extends View {
 
         int wSpecMode = MeasureSpec.getMode(widthMeasureSpec);
         int wSize = MeasureSpec.getSize(widthMeasureSpec);
-        if (wSpecMode == MeasureSpec.AT_MOST)
+        if (wSpecMode == MeasureSpec.AT_MOST) {
             wSize = 20 * 5 + 20 * 4 + 10;
+        }
 
         int hSpecMode = MeasureSpec.getMode(heightMeasureSpec);
         int hSize = MeasureSpec.getSize(heightMeasureSpec);
-        if (hSpecMode == MeasureSpec.AT_MOST)
+        if (hSpecMode == MeasureSpec.AT_MOST) {
             hSize = 10 + 20;
+        }
 
         widthMeasureSpec = MeasureSpec.makeMeasureSpec(wSize, wSpecMode);
         heightMeasureSpec = MeasureSpec.makeMeasureSpec(hSize, hSpecMode);
@@ -80,14 +82,16 @@ public class DotView extends View {
         Log.i("dotView", "min width:"+getMinimumWidth());
 
         for (int i=0; i<dots.length; i++) {
-            if (i == select)
+            if (i == select) {
                 dots[i].getPaint().setColor(Color.RED);
-            else
+            } else {
                 dots[i].getPaint().setColor(Color.BLUE);
+            }
         }
 
-        for (ShapeDrawable drawable : dots)
+        for (ShapeDrawable drawable : dots) {
             drawable.draw(canvas);
+        }
     }
 
     public void select(int select) {
@@ -96,15 +100,17 @@ public class DotView extends View {
     }
 
     public void flow(long delay) {
-        if (timer == null)
+        if (timer == null) {
             timer = new Timer();
+        }
 
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 select++;
-                if (select >= count)
+                if (select >= count) {
                     select = 0;
+                }
 
                 select(select);
             }

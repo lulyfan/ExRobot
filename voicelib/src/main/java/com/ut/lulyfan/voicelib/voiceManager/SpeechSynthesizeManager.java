@@ -60,10 +60,11 @@ public class SpeechSynthesizeManager {
             });
         }
 
-        if (isOnline)
+        if (isOnline) {
             setParam(MODE_CLOUD);    //设置参数
-        else
+        } else {
             setParam(MODE_LOCAL);
+        }
     }
 
     /**
@@ -73,8 +74,9 @@ public class SpeechSynthesizeManager {
      */
     public boolean startSpeaking(String text) {
 
-        if (mTts.isSpeaking())
+        if (mTts.isSpeaking()) {
             mTts.stopSpeaking();
+        }
 
         int code = mTts.startSpeaking(text, mTtsListener);
 
@@ -94,14 +96,16 @@ public class SpeechSynthesizeManager {
         setSynCompletedListener(new SynCompletedListener() {
             @Override
             public void onSynCompleted(SpeechError error) {
-                if (handler != null)
+                if (handler != null) {
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            if (loopFlag)
+                            if (loopFlag) {
                                 startSpeaking(text);
+                            }
                         }
                     }, gapTime);
+                }
             }
         });
         startSpeaking(text);
@@ -110,8 +114,9 @@ public class SpeechSynthesizeManager {
     int speakedCount; //已经合成的次数
     public void startSpeakingMulti(final String text, final long gapTime, final int count) {
 
-        if (count <= 0)
+        if (count <= 0) {
             return;
+        }
 
         speakedCount = 0;
         setSynCompletedListener(new SynCompletedListener() {
@@ -171,8 +176,9 @@ public class SpeechSynthesizeManager {
 
     public void destory() {
         Log.i("destory", "destory tts...");
-        if (mTts.isSpeaking())
+        if (mTts.isSpeaking()) {
             mTts.stopSpeaking();
+        }
         // 退出时释放连接
         boolean result = mTts.destroy();
         Log.i("destory", result?"destory tts success":"destory tts failed");
@@ -204,12 +210,13 @@ public class SpeechSynthesizeManager {
         // 清空参数
         mTts.setParameter(SpeechConstant.PARAMS, null);
 
-        if (mode == 0)
+        if (mode == 0) {
             setLocalParam();
-        else if (mode == 1)
+        } else if (mode == 1) {
             setCloudParam();
-        else
+        } else {
             showTip("无效模式");
+        }
 
         //设置合成语速
         mTts.setParameter(SpeechConstant.SPEED, "50");
@@ -272,8 +279,9 @@ public class SpeechSynthesizeManager {
 
         @Override
         public void onSpeakBegin() {
-            if (handler != null)
+            if (handler != null) {
                 handler.sendEmptyMessage(VoiceConstant.MSG_SYN_SPEAKBEGIN);
+            }
             Log.i(TAG, "开始播放    合成状态:"+isInSession());
         }
 
@@ -307,11 +315,13 @@ public class SpeechSynthesizeManager {
         @Override
         public void onCompleted(SpeechError error) {
             Log.i(TAG, "syn onCompleted");
-            if (handler != null)
+            if (handler != null) {
                 handler.sendEmptyMessage(VoiceConstant.MSG_SYN_SPEAKEND);
+            }
 
-            if (synCompletedListener != null)
+            if (synCompletedListener != null) {
                 synCompletedListener.onSynCompleted(error);
+            }
         }
 
         @Override
