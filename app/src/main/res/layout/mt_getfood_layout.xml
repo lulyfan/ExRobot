@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="请输入4位取餐密码"
+        android:textSize="60sp"
+        android:id="@+id/textView"
+        android:layout_centerHorizontal="true"/>
+
+    <EditText
+        android:id="@+id/code"
+        android:layout_width="500dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/textView"
+        android:textSize="40sp"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:layout_centerHorizontal="true"/>
+
+    <Button
+        android:id="@+id/del"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/code"
+        android:layout_alignBottom="@+id/code"
+        android:background="@drawable/input_del"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/recyclerView"
+        android:layout_below="@+id/code"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp">
+
+    </android.support.v7.widget.RecyclerView>
+
+    <Button
+        android:id="@+id/open"
+        android:layout_width="130dp"
+        android:layout_height="70dp"
+        android:text="开箱"
+        android:textSize="30sp"
+        android:background="@drawable/bt_green"
+        android:layout_alignLeft="@+id/back"
+        android:layout_above="@+id/back" />
+
+    <Button
+        android:id="@+id/back"
+        android:layout_width="130dp"
+        android:layout_height="70dp"
+        android:text="返回"
+        android:textSize="30sp"
+        android:background="@drawable/bt_grey"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="50dp"
+        android:layout_toRightOf="@+id/recyclerView"
+        android:layout_alignBottom="@+id/recyclerView"
+        />
+</RelativeLayout>

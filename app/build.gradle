@@ -3,7 +3,7 @@ apply plugin: 'org.greenrobot.greendao'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "25.0.2"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.ut.lulyfan.exrobot"
         minSdkVersion 15
@@ -59,17 +59,17 @@ dependencies {
     compile files('libs/aliyun-java-sdk-core-3.3.1.jar')
     compile files('libs/aliyun-java-sdk-dysmsapi-1.0.0.jar')
     compile project(':lib')
-    compile files('libs/poi_lib/ooxml-lib/curvesapi-1.04.jar')
-    compile files('libs/poi_lib/commons-collections4-4.1.jar')
-    compile files('libs/poi_lib/commons-logging-1.2.jar')
-    compile files('libs/poi_lib/junit-4.12.jar')
-    compile files('libs/poi_lib/log4j-1.2.17.jar')
-    compile files('libs/poi_lib/poi-3.17.jar')
-    compile files('libs/poi_lib/poi-examples-3.17.jar')
-    compile files('libs/poi_lib/poi-excelant-3.17.jar')
-    compile files('libs/poi_lib/poi-ooxml-3.17.jar')
-    compile files('libs/poi_lib/poi-ooxml-schemas-3.17.jar')
-    compile files('libs/poi_lib/poi-scratchpad-3.17.jar')
+    //    compile files('libs/poi_lib/ooxml-lib/curvesapi-1.04.jar')
+    //    compile files('libs/poi_lib/commons-collections4-4.1.jar')
+    //    compile files('libs/poi_lib/commons-logging-1.2.jar')
+    //    compile files('libs/poi_lib/junit-4.12.jar')
+    //    compile files('libs/poi_lib/log4j-1.2.17.jar')
+    //    compile files('libs/poi_lib/poi-3.17.jar')
+    //    compile files('libs/poi_lib/poi-examples-3.17.jar')
+    //    compile files('libs/poi_lib/poi-excelant-3.17.jar')
+    //    compile files('libs/poi_lib/poi-ooxml-3.17.jar')
+    //    compile files('libs/poi_lib/poi-ooxml-schemas-3.17.jar')
+    //    compile files('libs/poi_lib/poi-scratchpad-3.17.jar')
     compile files('libs/doorManager.jar')
     compile files('libs/mysql-connector-java-5.1.32-bin.jar')
     compile 'com.android.support:appcompat-v7:24.2.1'
@@ -79,4 +79,15 @@ dependencies {
     compile 'com.android.support:support-v4:24.2.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
+    compile files('libs/custom_msgs_srvs-0.2.1.jar')
+    implementation files('libs/poi_lib/log4j-1.2.17.jar')
+    implementation files('libs/poi_lib/commons-collections4-4.1.jar')
+    implementation files('libs/poi_lib/commons-logging-1.2.jar')
+    implementation files('libs/poi_lib/junit-4.12.jar')
+    implementation files('libs/poi_lib/poi-examples-3.17.jar')
+    implementation files('libs/poi_lib/poi-3.17.jar')
+    implementation files('libs/poi_lib/poi-ooxml-3.17.jar')
+    implementation files('libs/poi_lib/poi-excelant-3.17.jar')
+    implementation files('libs/poi_lib/poi-scratchpad-3.17.jar')
+    implementation files('libs/poi_lib/poi-ooxml-schemas-3.17.jar')
 }

@@ -14,7 +14,7 @@
         android:id="@+id/bt_start"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/bt_disabled_bg"
+        android:background="@drawable/bt_bg_disabled"
         android:enabled="false"
         android:paddingTop="20dp"
         android:paddingBottom="20dp"

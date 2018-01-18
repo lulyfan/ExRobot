@@ -31,7 +31,7 @@ public class InitFragment extends Fragment{
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        start.setBackgroundResource(R.drawable.bt_pressed_bg);
+                        start.setBackgroundResource(R.drawable.bt_bg_pressed);
                         start.setTextColor(Color.WHITE);
                         break;
                     case MotionEvent.ACTION_UP:
@@ -48,7 +48,7 @@ public class InitFragment extends Fragment{
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public void ready() {
         start.setEnabled(true);
-        start.setBackgroundResource(R.drawable.bt_enable_bg);
+        start.setBackgroundResource(R.drawable.bt_bg_enable);
         start.setTextColor(0xFFD943AE);
     }
 }

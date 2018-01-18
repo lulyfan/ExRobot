@@ -75,6 +75,12 @@ public class SettingActivity extends Activity {
             } catch (Exception e) {
                 Toast.makeText(context, "坐标数据异常,请重新设置", Toast.LENGTH_LONG).show();
             }
+
+            try {
+                Integer.parseInt(sfloor);
+            } catch (NumberFormatException e) {
+                Toast.makeText(context, "楼层数据异常,请重新设置", Toast.LENGTH_LONG).show();
+            }
         }
         return false;
     }

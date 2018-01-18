@@ -13,14 +13,17 @@ import java.net.URI;
 
 import std_msgs.Bool;
 import std_msgs.Float64;
+import std_msgs.Int32;
 import std_msgs.Int64;
 
 public class ClientActivity extends RosActivity {
 
     protected GoTalker goTalker;
     protected InitPoseTalker initPoseTalker;
+    protected LiftInitPoseTalker liftInitPoseTalker;
     protected StringTalker switchMode;
     protected Listener<Bool> arriveListener;
+    protected Listener<Int32> liftInitListener;
     protected Listener<Int64> errorCode;
     protected Listener<Float64> battery;
     protected Listener<Bool> zwj_standby;
@@ -36,7 +39,9 @@ public class ClientActivity extends RosActivity {
 
         goTalker = new GoTalker("move_base_simple/goal");
         initPoseTalker = new InitPoseTalker("initialpose");
+        liftInitPoseTalker = new LiftInitPoseTalker("UD/elevator_initial/triggered");
         switchMode = new StringTalker("work_model");
+        liftInitListener = new Listener<>("UD/elevator_initial/finished", Int32._TYPE);
         arriveListener = new Listener<>("Local/Goal_reached", Bool._TYPE);
         errorCode = new Listener<>("/error", Int64._TYPE);
         battery = new Listener<>("/battery", Float64._TYPE);
@@ -58,6 +63,15 @@ public class ClientActivity extends RosActivity {
                     if (arriveHandler != null) {
                         arriveHandler.hanldArrive();
                     }
+                }
+            }
+        });
+
+        liftInitListener.setMessageListener(new MessageListener<Int32>() {
+            @Override
+            public void onNewMessage(Int32 int32) {
+                if (liftInitHandler != null) {
+                    liftInitHandler.hanldLiftInit();
                 }
             }
         });
@@ -92,6 +106,8 @@ public class ClientActivity extends RosActivity {
         nodeMainExecutor.execute(goTalker, nodeConfiguration);
         nodeMainExecutor.execute(switchMode, nodeConfiguration);
         nodeMainExecutor.execute(initPoseTalker, nodeConfiguration);
+        nodeMainExecutor.execute(liftInitPoseTalker, nodeConfiguration);
+        nodeMainExecutor.execute(liftInitListener, nodeConfiguration);
         nodeMainExecutor.execute(arriveListener, nodeConfiguration);
         nodeMainExecutor.execute(errorCode, nodeConfiguration);
         nodeMainExecutor.execute(battery, nodeConfiguration);
@@ -113,12 +129,22 @@ public class ClientActivity extends RosActivity {
 
     private ArriveHandler arriveHandler;
 
-    protected void setArriveHandler(ArriveHandler arriveHandler) {
+    public void setArriveHandler(ArriveHandler arriveHandler) {
         this.arriveHandler = arriveHandler;
     }
 
-    protected interface ArriveHandler {
+    public interface ArriveHandler {
         void hanldArrive();
+    }
+
+    private LiftInitHandler liftInitHandler;
+
+    public void setLiftInitHandler(LiftInitHandler liftInitHandler) {
+        this.liftInitHandler = liftInitHandler;
+    }
+
+    public interface LiftInitHandler {
+        void hanldLiftInit();
     }
 
     private BlockHandler blockHandler;

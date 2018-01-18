@@ -104,7 +104,7 @@ public class CustomerDBUtil {
                 .listIterator();
     }
 
-    public List queryAllRosError() {
+    public List queryAllCustomer() {
         return customerDao.loadAll();
     }
 

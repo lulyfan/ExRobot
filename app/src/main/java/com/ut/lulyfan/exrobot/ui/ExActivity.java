@@ -18,6 +18,8 @@ import com.ut.lulyfan.exrobot.debug.LogInFile;
 import com.ut.lulyfan.exrobot.model.Customer;
 import com.ut.lulyfan.exrobot.model.Record;
 import com.ut.lulyfan.exrobot.ros.ClientActivity;
+import com.ut.lulyfan.exrobot.ui.meituan.MTArriveFragment;
+import com.ut.lulyfan.exrobot.ui.meituan.MTStartFragment;
 import com.ut.lulyfan.exrobot.util.MySqlUtil;
 import com.ut.lulyfan.exrobot.util.SmsUtil;
 import com.ut.lulyfan.voicelib.voiceManager.SpeechSynthesizeManager;
@@ -30,17 +32,18 @@ import java.util.concurrent.Executors;
 
 public class ExActivity extends ClientActivity {
 
-    public static final int START_EX = 0;
-    public static final int END_EX = 1;
+    public static final int TASK_START = 0;
+    public static final int TASK_END = 1;
     public static final int GO_HOME = 2; //返回主界面
     public static final int INIT = 3;
 
     private static final int BlockSynTime = 2000;   //阻塞语音播放的间隔时间
 
     private List<Customer> customers = new ArrayList<>();  //快递的送达客户
+    private List<Customer> curCustomers = new ArrayList<>();  //当前要送达的某个楼层的客户
     private ArrayList<Customer> failedCustomers = new ArrayList<>();  //快递未领取的客户
     private int initFloor ;  //机器人的初始化楼层
-    private int floor ;      //机器人当前所处楼层
+    private int curFloor ;      //机器人当前所处楼层
     private double[] initPosition = new double[4];
     private double[] exPosition = new double[4];    //获取快递的坐标点
     private long lastTime;   //检测长按的时间
@@ -48,7 +51,7 @@ public class ExActivity extends ClientActivity {
     private MoveFragment moveFragment;
     private InitFragment initFragment;
     private BatteryView batteryView;
-    SpeechSynthesizeManager ssm;
+    public SpeechSynthesizeManager ssm;
     static Executor executor = Executors.newCachedThreadPool();
     public static String sn;
     public static String area;
@@ -81,8 +84,6 @@ public class ExActivity extends ClientActivity {
                 }
             }
         });
-
-        getSetting();
     }
 
 
@@ -115,6 +116,7 @@ public class ExActivity extends ClientActivity {
 
         sn = sSN;
         area = sArea;
+        initFloor = Integer.parseInt(sfloor);
 
         String[] tmp = sInitPosition.split(",");
         initPosition[0] = Double.valueOf(tmp[0]);
@@ -133,6 +135,7 @@ public class ExActivity extends ClientActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        getSetting();
         isInited = false;
     }
 
@@ -184,33 +187,32 @@ public class ExActivity extends ClientActivity {
     }
 
     //快递任务
-    public void express(final Customer customer) {
+    public void runTask(final Customer customer) {
 
-        ssm.startSpeaking("开始派送"+customer.getName()+"的快递");
+        ssm.startSpeaking("开始派送"+customer.getName()+"的外卖");
 
         goTalker.sendMsg(customer.getX(), customer.getY(), customer.getW(), customer.getZ());
         //切换到移动的fragment
-        moveFragment.setTip("正在派送"+customer.getName()+"的快递...");
+        moveFragment.setTip("正在派送"+customer.getName()+"的外卖...");
         FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
         ft.replace(R.id.container,  moveFragment);
         ft.commit();
 
         String nowTime = System.currentTimeMillis() + "";
-        String code = nowTime.substring(nowTime.length() - 6);
+        String code = nowTime.substring(nowTime.length() - 4);
         customer.setCode(code);
-        SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.START, "{\"code\":\" "+ code + "\"}");
+        SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.MT_START, "{\"code\":\" "+ code + "\"}");
 
         setArriveHandler(new ArriveHandler() {
             @Override
             public void hanldArrive() {
                 //切换到快递送达的结果fragment
                 FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
-                ft.replace(R.id.container,  ShowResultFragment.newInstance(customer));
+                ft.replace(R.id.container,  MTArriveFragment.newInstance(customer));
                 ft.commit();
 
                 String code = customer.getCode();
-                SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.ARRIVE, "{\"code\":\" "+ code + "\"}");
-                ssm.startSpeakingMulti(customer.getName() + ",您有"+customer.getExCount()+"件快递到了,请输入取货码领取", 2000, 2);
+                SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.MT_ARRIVE, "{\"code\":\" "+ code + "\"}");
 
                 Record record = new Record(sn, "迎宾", area);
                 recordData(record);
@@ -235,7 +237,7 @@ public class ExActivity extends ClientActivity {
             public void hanldArrive() {
                 //切换到快递送达的结果fragment
                 FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
-                ft.replace(R.id.container,  new InputFragment());
+                ft.replace(R.id.container,  new MTStartFragment());
                 ft.commit();
 
                 setArriveHandler(null);
@@ -248,7 +250,7 @@ public class ExActivity extends ClientActivity {
         goTalker.sendMsg(exPosition[0], exPosition[1], exPosition[2], exPosition[3]);
 
 //        ssm.startSpeaking("快递派送完毕,开始返回...");
-        moveFragment.setTip("快递派送完毕,正在返回...");
+        moveFragment.setTip("外卖派送完毕,正在返回...");
         FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
         ft.replace(R.id.container, moveFragment);
         ft.commit();
@@ -259,9 +261,9 @@ public class ExActivity extends ClientActivity {
                 //切换到快递送达的结果fragment
                 FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
                 if (failedCustomers.isEmpty()) {
-                    ft.replace(R.id.container, new InputFragment());
+                    ft.replace(R.id.container, new MTStartFragment());
                 } else {
-                    ssm.startSpeaking("有未签收快递，请查看");
+                    ssm.startSpeaking("有未签收外卖，请查看");
                     ft.replace(R.id.container, FailedFragment.getInstance(failedCustomers));
                 }
                 ft.commit();
@@ -304,20 +306,23 @@ public class ExActivity extends ClientActivity {
         });
     }
 
-    Handler handler = new Handler() {
+    public Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
 
-                case START_EX:
+                case TASK_START:
                     customers = (List<Customer>) msg.obj;
                     if (!customers.isEmpty()) {
-                        express(customers.get(0));
+                        for (Customer customer : customers) {
+                            customer.setRobotID(sn);
+                        }
+                        runTask(customers.get(0));
                         customers.remove(0);
                     }
                     break;
 
-                case END_EX:
+                case TASK_END:
                     ssm.stopSpeakingLoop();
 
                     //派送失败处理
@@ -329,7 +334,7 @@ public class ExActivity extends ClientActivity {
 
                     //接着送下一个快递或返回
                     if (!customers.isEmpty()) {
-                        express(customers.get(0));
+                        runTask(customers.get(0));
                         customers.remove(0);
                     } else {
                         back();
@@ -340,7 +345,7 @@ public class ExActivity extends ClientActivity {
                 case GO_HOME:
                     failedCustomers.clear();
                     FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
-                    ft.replace(R.id.container, new InputFragment());
+                    ft.replace(R.id.container, new MTStartFragment());
                     ft.commit();
                     break;
 
@@ -349,12 +354,14 @@ public class ExActivity extends ClientActivity {
                     recordData(record);
 
                     initPoseTalker.sendMsg(initPosition[0], initPosition[1], initPosition[2], initPosition[3]);
+//                    liftInitPoseTalker.sendMsg(initFloor, initPosition[0], initPosition[1], initPosition[2], initPosition[3]);
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
                            goExpressPosition();
                         }
                     }, 1000);
+                    break;
 
                 default:
             }

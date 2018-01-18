@@ -29,6 +29,7 @@ public class ExcelUtil {
         int phoneNumIndex = 0;
         int nameIndex = 0;
         int regionIndex = 0;
+        int floorIndex = 0;
         int xIndex = 0;
         int yIndex = 0;
         int wIndex = 0;
@@ -52,6 +53,8 @@ public class ExcelUtil {
 
                     } else if ("区域".equals(str) || "座位".equals(str)) {
                         regionIndex = colNum;
+                    } else if ("楼层".equals(str) || "floor".equals(str)) {
+                        floorIndex = colNum;
                     } else if ("x".equalsIgnoreCase(str)) {
                         xIndex = colNum;
                     } else if ("y".equalsIgnoreCase(str)) {
@@ -83,6 +86,8 @@ public class ExcelUtil {
                         customer.setName(str);
                     } else if (i == regionIndex) {
                         customer.setArea(str);
+                    } else if (i == floorIndex) {
+                        customer.setFloor(Integer.parseInt(str));
                     } else if (i == xIndex) {
                         customer.setX(Double.valueOf(str));
                     } else if (i == yIndex) {

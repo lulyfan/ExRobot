@@ -21,7 +21,7 @@ import com.ut.lulyfan.exrobot.model.Customer;
 import com.ut.lulyfan.exrobot.util.DoorUtil;
 import com.ut.lulyfan.voicelib.voiceManager.SpeechSynthesizeManager;
 
-import static com.ut.lulyfan.exrobot.ui.ExActivity.END_EX;
+import static com.ut.lulyfan.exrobot.ui.ExActivity.TASK_END;
 import static com.ut.lulyfan.exrobot.util.DoorUtil.CLOSED;
 
 /**
@@ -119,17 +119,6 @@ public class ShowResultFragment extends Fragment {
             }
         });
 
-
-
-        //如果用户在超时时间内未输入正确的取货码，发送快递结束消息
-//        handler.postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                if (!isVerifySuccessed)
-//                    Message.obtain(handler, END_EX, customer).sendToTarget();
-//            }
-//        }, 2 * 60 * 1000);
-
         return root;
     }
 
@@ -148,7 +137,7 @@ public class ShowResultFragment extends Fragment {
 
             if (doorUtil.check() == CLOSED) {
                 ssm.stopSpeakingLoop();
-                handler.sendEmptyMessage(ExActivity.END_EX);
+                handler.sendEmptyMessage(ExActivity.TASK_END);
                 break;
             }
 
@@ -159,38 +148,6 @@ public class ShowResultFragment extends Fragment {
             }
         }
     }
-
-//    static class AsyncTask<Inteter> extends android.os.AsyncTask {
-//
-//        @Override
-//        protected void onProgressUpdate(Object[] values) {
-//            countdown.setText(values[0] + "S");
-//        }
-//
-//        @Override
-//        protected void onPostExecute(Object o) {
-//            Message.obtain(handler, END_EX, customer).sendToTarget();
-//        }
-//
-//        @Override
-//        protected java.lang.Object doInBackground(java.lang.Object[] params) {
-//            int seconds = (int) params[0];
-//            while (seconds > 0) {
-//
-//                if (isCancelled())
-//                    break;
-//
-//                publishProgress(seconds);
-//                try {
-//                    Thread.sleep(1000);
-//                    seconds --;
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//            return null;
-//        }
-//    }
 
     class CountdownTask extends AsyncTask<Integer, Integer, Object> {
 
@@ -227,7 +184,7 @@ public class ShowResultFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Object o) {
-            Message.obtain(handler, END_EX, customer).sendToTarget();
+            Message.obtain(handler, TASK_END, customer).sendToTarget();
         }
     }
 }

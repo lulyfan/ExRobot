@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">金地快递</string>
     <string name="default_password">123456</string>
+    <string name="reput"><u>重新放餐</u></string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

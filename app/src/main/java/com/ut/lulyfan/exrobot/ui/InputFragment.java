@@ -149,7 +149,7 @@ public class InputFragment extends Fragment {
                             Toast.makeText(getActivity(), "未添加快递任务", Toast.LENGTH_SHORT).show();
                         } else {
                             if (doorUtil.check() == DoorUtil.CLOSED) {
-                                Message.obtain(handler, ExActivity.START_EX, customers).sendToTarget();
+                                Message.obtain(handler, ExActivity.TASK_START, customers).sendToTarget();
                             } else {
                                 Toast.makeText(getActivity(), "请关闭厢门", Toast.LENGTH_SHORT).show();
                                 ssm.startSpeaking("请关闭厢门");

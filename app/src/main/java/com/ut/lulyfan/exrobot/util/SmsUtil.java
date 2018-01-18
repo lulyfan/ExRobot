@@ -38,6 +38,8 @@ public class SmsUtil {
 
     public static final String START = "SMS_114060287";  //开始派送快递模板
     public static final String ARRIVE = "SMS_114075309";               //快递到达模板
+    public static final String MT_START = "SMS_121160147";  //美团开始派送快递模板
+    public static final String MT_ARRIVE = "SMS_121165166";               //美团快递到达模板
     public static final String EX_FAIL = "SMS_109495374";  //快递派送失败模板
 
     public static SendSmsResponse sendSms(String phoneNum, String templateCode, String para) throws ClientException {
