@@ -1,16 +1,22 @@
 package com.ut.lulyfan.exrobot.ui;
 
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import com.iflytek.cloud.SpeechError;
 import com.ut.lulyfan.exrobot.R;
@@ -18,12 +24,21 @@ import com.ut.lulyfan.exrobot.debug.LogInFile;
 import com.ut.lulyfan.exrobot.model.Customer;
 import com.ut.lulyfan.exrobot.model.Record;
 import com.ut.lulyfan.exrobot.ros.ClientActivity;
+import com.ut.lulyfan.exrobot.ros.NewGoTalker;
 import com.ut.lulyfan.exrobot.ui.meituan.MTArriveFragment;
 import com.ut.lulyfan.exrobot.ui.meituan.MTStartFragment;
+import com.ut.lulyfan.exrobot.util.ExcelUtil;
 import com.ut.lulyfan.exrobot.util.MySqlUtil;
 import com.ut.lulyfan.exrobot.util.SmsUtil;
+import com.ut.lulyfan.exrobot.util.liftUtil.DebugView;
+import com.ut.lulyfan.exrobot.util.liftUtil.LiftControl;
+import com.ut.lulyfan.exrobot.util.liftUtil.LiftPoint;
+import com.ut.lulyfan.exrobot.util.liftUtil.LiftService;
 import com.ut.lulyfan.voicelib.voiceManager.SpeechSynthesizeManager;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,16 +54,16 @@ public class ExActivity extends ClientActivity {
 
     private static final int BlockSynTime = 2000;   //阻塞语音播放的间隔时间
 
-    private List<Customer> customers = new ArrayList<>();  //快递的送达客户
-    private List<Customer> curCustomers = new ArrayList<>();  //当前要送达的某个楼层的客户
+    private List<Customer> allCustomers = new ArrayList<>();  //快递的送达客户
+    private List<Customer> dstCustomers = new ArrayList<>();  //当前要送达的某个楼层的客户
     private ArrayList<Customer> failedCustomers = new ArrayList<>();  //快递未领取的客户
     private int initFloor ;  //机器人的初始化楼层
     private int curFloor ;      //机器人当前所处楼层
+    private int dstFloor;      //机器人要去的目标楼层
     private double[] initPosition = new double[4];
     private double[] exPosition = new double[4];    //获取快递的坐标点
     private long lastTime;   //检测长按的时间
     private long blockSynEndTime;     //阻塞时语音合成结束时间
-    private MoveFragment moveFragment;
     private InitFragment initFragment;
     private BatteryView batteryView;
     public SpeechSynthesizeManager ssm;
@@ -56,17 +71,19 @@ public class ExActivity extends ClientActivity {
     public static String sn;
     public static String area;
     private List<Record> failedRecords = new ArrayList<>();
-
+    private List<LiftPoint> liftPoints = new ArrayList<>();
+    private LiftService liftService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ex);
 
+        DebugView.getInstance(this);
+
         batteryView = (BatteryView) findViewById(R.id.battery);
 
         ssm = new SpeechSynthesizeManager(this, false, handler);
-        moveFragment = new MoveFragment();
         initFragment = new InitFragment();
 
         setBlockHandler(new BlockHandler() {
@@ -84,9 +101,46 @@ public class ExActivity extends ClientActivity {
                 }
             }
         });
+
+        getLiftPoints("/sdcard/UTRobot/liftPoint.xls");
+
+        Intent intent = new Intent(this, LiftService.class);
+        bindService(intent, liftServiceConnection, BIND_AUTO_CREATE);
     }
 
+    private ServiceConnection liftServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            liftService = ((LiftService.LocalBinder) service).getService();
+            liftService.init(ExActivity.this, new LiftService.InitListener() {
+                @Override
+                public void handleInit(boolean result) {
+                    if (!result) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ExActivity.this);
+                        builder.setTitle("提示")
+                                .setMessage("串口初始化失败!")
+                                .setPositiveButton("退出", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        ExActivity.this.finish();
+                                    }
+                                });
+                        builder.show();
+                    }
+                }
+            });
+            liftService.setLiftPoints(liftPoints);
+            System.out.println("connect liftService");
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
+    float firstX;
+    float firstY;
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         Log.i("ui", "activity onTouchEvent");
@@ -94,11 +148,25 @@ public class ExActivity extends ClientActivity {
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 lastTime = System.currentTimeMillis();
+                firstX = ev.getRawX();
+                firstY = ev.getRawY();
             case MotionEvent.ACTION_UP:
                 gapTime = System.currentTimeMillis() - lastTime;
                 if (gapTime >= 5000) {
                     Intent intent = new Intent(this, SettingActivity.class);
                     startActivity(intent);
+                }
+
+                int moveX = (int) (ev.getRawX() - firstX);
+                if (moveX > 1000) {
+                    DebugView.getInstance(this).show();
+                }
+
+                int moveY = (int) (ev.getRawY() - firstY);
+                if (moveY > 700) {
+                    if (liftService != null) {
+                        liftService.realeaseDoor();
+                    }
                 }
                 break;
             default:
@@ -116,7 +184,7 @@ public class ExActivity extends ClientActivity {
 
         sn = sSN;
         area = sArea;
-        initFloor = Integer.parseInt(sfloor);
+        initFloor = curFloor = Integer.parseInt(sfloor);
 
         String[] tmp = sInitPosition.split(",");
         initPosition[0] = Double.valueOf(tmp[0]);
@@ -129,6 +197,18 @@ public class ExActivity extends ClientActivity {
         exPosition[1] = Double.valueOf(tmp[1]);
         exPosition[2] = Double.valueOf(tmp[2]);
         exPosition[3] = Double.valueOf(tmp[3]);
+    }
+
+    private void getLiftPoints(String path) {
+        try {
+            liftPoints = ExcelUtil.getLiftPoints(path);
+        } catch (InvalidFormatException e) {
+            Toast.makeText(this, "InvalidFormatException:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "数据异常:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch (IOException e) {
+            Toast.makeText(this, "IOException:" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private boolean isInited;
@@ -150,8 +230,10 @@ public class ExActivity extends ClientActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        DebugView.destory();
         nodeMainExecutorService.forceShutdown();
         ssm.destory();
+        unbindService(liftServiceConnection);
     }
 
     private long batteryUpdateTime;
@@ -187,15 +269,14 @@ public class ExActivity extends ClientActivity {
     }
 
     //快递任务
-    public void runTask(final Customer customer) {
+    public void runOneTask(final Customer customer) {
 
-        ssm.startSpeaking("开始派送"+customer.getName()+"的外卖");
+//        ssm.startSpeaking("开始派送"+customer.getName()+"的外卖");
 
-        goTalker.sendMsg(customer.getX(), customer.getY(), customer.getW(), customer.getZ());
+        newGoTalker.sendMsg(NewGoTalker.NORMAL_MODE, customer.getX(), customer.getY(), customer.getZ(), customer.getW());
         //切换到移动的fragment
-        moveFragment.setTip("正在派送"+customer.getName()+"的外卖...");
         FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
-        ft.replace(R.id.container,  moveFragment);
+        ft.replace(R.id.container,  MoveFragment.newInstance("正在派送"+customer.getName()+"的外卖..."));
         ft.commit();
 
         String nowTime = System.currentTimeMillis() + "";
@@ -225,11 +306,10 @@ public class ExActivity extends ClientActivity {
     //去取快递的地点（领取快递）
     public void goExpressPosition() {
 
-        goTalker.sendMsg(exPosition[0], exPosition[1], exPosition[2], exPosition[3]);
+        newGoTalker.sendMsg(NewGoTalker.NORMAL_MODE, exPosition[0], exPosition[1], exPosition[2], exPosition[3]);
 
-        moveFragment.setTip("正在前往前台...");
         FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
-        ft.replace(R.id.container, moveFragment);
+        ft.replace(R.id.container, MoveFragment.newInstance("正在前往前台..."));
         ft.commit();
 
         setArriveHandler(new ArriveHandler() {
@@ -245,14 +325,40 @@ public class ExActivity extends ClientActivity {
         });
     }
 
-    public void back() {
+    private void takeLift(int curFloor, int dstFloor, LiftControl.LiftListener liftListener) {
 
-        goTalker.sendMsg(exPosition[0], exPosition[1], exPosition[2], exPosition[3]);
+        MoveFragment moveFragment = new MoveFragment();
+        liftService.setStateListener(moveFragment);
+
+        FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
+        ft.replace(R.id.container,  moveFragment);
+        ft.commit();
+
+        liftService.takeLift(curFloor, dstFloor, liftListener);
+    }
+
+    private void back() {
+        if (curFloor != initFloor) {
+            liftService.setOutPoint(exPosition);
+            takeLift(curFloor, initFloor, new LiftControl.LiftListener() {
+                @Override
+                public void finish() {
+                    curFloor = initFloor;
+                    sameFloorBack();
+                }
+            });
+        } else {
+            sameFloorBack();
+        }
+    }
+
+    private void sameFloorBack() {
+
+        newGoTalker.sendMsg(NewGoTalker.NORMAL_MODE, exPosition[0], exPosition[1], exPosition[2], exPosition[3]);
 
 //        ssm.startSpeaking("快递派送完毕,开始返回...");
-        moveFragment.setTip("外卖派送完毕,正在返回...");
         FragmentTransaction ft = ExActivity.this.getFragmentManager().beginTransaction();
-        ft.replace(R.id.container, moveFragment);
+        ft.replace(R.id.container, MoveFragment.newInstance("外卖派送完毕,正在返回..."));
         ft.commit();
 
         setArriveHandler(new ArriveHandler() {
@@ -306,20 +412,53 @@ public class ExActivity extends ClientActivity {
         });
     }
 
+    private void startTasks() {
+        if (allCustomers == null)
+            return;
+
+        dstFloor = allCustomers.get(0).getFloor();
+        for (Customer customer : allCustomers) {
+            if (customer.getFloor() == dstFloor) {
+                dstCustomers.add(customer);
+                allCustomers.remove(customer);
+            }
+        }
+
+        for (Customer customer : dstCustomers) {
+            customer.setRobotID(sn);
+        }
+
+        if (curFloor == dstFloor) {
+            runOneTask(dstCustomers.get(0));
+            dstCustomers.remove(0);
+        } else {
+
+            double[] outPoint = new double[4];
+            outPoint[0] = dstCustomers.get(0).getX();
+            outPoint[1] = dstCustomers.get(0).getY();
+            outPoint[2] = dstCustomers.get(0).getZ();
+            outPoint[3] = dstCustomers.get(0).getW();
+
+            liftService.setOutPoint(outPoint);
+            takeLift(curFloor, dstFloor, new LiftControl.LiftListener() {
+                @Override
+                public void finish() {
+                    curFloor = dstFloor;
+                    runOneTask(dstCustomers.get(0));
+                    dstCustomers.remove(0);
+                }
+            });
+        }
+    }
+
     public Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
 
                 case TASK_START:
-                    customers = (List<Customer>) msg.obj;
-                    if (!customers.isEmpty()) {
-                        for (Customer customer : customers) {
-                            customer.setRobotID(sn);
-                        }
-                        runTask(customers.get(0));
-                        customers.remove(0);
-                    }
+                    allCustomers = (List<Customer>) msg.obj;
+                    startTasks();
                     break;
 
                 case TASK_END:
@@ -332,10 +471,12 @@ public class ExActivity extends ClientActivity {
                         SmsUtil.asyncSend(customer.getPhoneNum(), SmsUtil.EX_FAIL, null);
                     }
 
-                    //接着送下一个快递或返回
-                    if (!customers.isEmpty()) {
-                        runTask(customers.get(0));
-                        customers.remove(0);
+                    //接着送下一个快递或送其他楼层任务或返回
+                    if (!dstCustomers.isEmpty()) {
+                        runOneTask(dstCustomers.get(0));
+                        dstCustomers.remove(0);
+                    } else if (!allCustomers.isEmpty()) {
+                        startTasks();
                     } else {
                         back();
                     }
@@ -353,14 +494,25 @@ public class ExActivity extends ClientActivity {
                     Record record = new Record(sn, "注册", area);
                     recordData(record);
 
-                    initPoseTalker.sendMsg(initPosition[0], initPosition[1], initPosition[2], initPosition[3]);
-//                    liftInitPoseTalker.sendMsg(initFloor, initPosition[0], initPosition[1], initPosition[2], initPosition[3]);
-                    handler.postDelayed(new Runnable() {
+//                    initPoseTalker.sendMsg(initPosition[0], initPosition[1], initPosition[2], initPosition[3]);
+//                    handler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            goExpressPosition();
+//                        }
+//                    }, 1000);
+
+                    liftInitPoseTalker.sendMsg(100 + initFloor, initPosition[0], initPosition[1], initPosition[2], initPosition[3]);
+                    setLiftInitHandler(new LiftInitHandler() {
                         @Override
-                        public void run() {
-                           goExpressPosition();
+                        public void handleLiftInit(int result) {
+                            if (result != -1) {
+                                DebugView.println("change map success");
+                                goExpressPosition();
+                            }
                         }
-                    }, 1000);
+                    });
+
                     break;
 
                 default:

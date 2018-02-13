@@ -12,21 +12,24 @@ import org.ros.node.NodeMainExecutor;
 import java.net.URI;
 
 import std_msgs.Bool;
+import std_msgs.Float32;
 import std_msgs.Float64;
 import std_msgs.Int32;
 import std_msgs.Int64;
 
 public class ClientActivity extends RosActivity {
 
-    protected GoTalker goTalker;
+    public GoTalker goTalker;
+    public NewGoTalker newGoTalker;
     protected InitPoseTalker initPoseTalker;
-    protected LiftInitPoseTalker liftInitPoseTalker;
+    public LiftInitPoseTalker liftInitPoseTalker;
     protected StringTalker switchMode;
     protected Listener<Bool> arriveListener;
     protected Listener<Int32> liftInitListener;
     protected Listener<Int64> errorCode;
     protected Listener<Float64> battery;
     protected Listener<Bool> zwj_standby;
+    public Listener<Float32> liftPosition;
 
     public ClientActivity() {
         super("ExRobot", "ExRobot", URI.create("http://192.168.168.100:11311"));
@@ -38,6 +41,7 @@ public class ClientActivity extends RosActivity {
         setContentView(R.layout.activity_client);
 
         goTalker = new GoTalker("move_base_simple/goal");
+        newGoTalker = new NewGoTalker("UD/elevator/send_goal");
         initPoseTalker = new InitPoseTalker("initialpose");
         liftInitPoseTalker = new LiftInitPoseTalker("UD/elevator_initial/triggered");
         switchMode = new StringTalker("work_model");
@@ -46,6 +50,7 @@ public class ClientActivity extends RosActivity {
         errorCode = new Listener<>("/error", Int64._TYPE);
         battery = new Listener<>("/battery", Float64._TYPE);
         zwj_standby = new Listener<>("standby/u_xiao_mei_go_go", Bool._TYPE);
+        liftPosition = new Listener<>("UD/elevator/position", Float32._TYPE);
     }
 
 
@@ -71,7 +76,7 @@ public class ClientActivity extends RosActivity {
             @Override
             public void onNewMessage(Int32 int32) {
                 if (liftInitHandler != null) {
-                    liftInitHandler.hanldLiftInit();
+                    liftInitHandler.handleLiftInit(int32.getData());
                 }
             }
         });
@@ -81,7 +86,7 @@ public class ClientActivity extends RosActivity {
             public void onNewMessage(Int64 int64) {
                 int code = (int) int64.getData();
 
-                if (code == 3 && blockHandler != null) {
+                if ((code == 3 || code == 104) && blockHandler != null) {
                     blockHandler.hanldBlock();
                 }
             }
@@ -103,7 +108,23 @@ public class ClientActivity extends RosActivity {
             }
         });
 
+        liftPosition.setMessageListener(new MessageListener<Float32>() {
+            @Override
+            public void onNewMessage(Float32 float32) {
+                if (Math.abs(float32.getData() - 1.0) < 0.001) {
+                    if (liftPositionListener != null) {
+                        liftPositionListener.end();
+                    }
+                } else {
+                    if (liftPositionListener != null) {
+                        liftPositionListener.start();
+                    }
+                }
+            }
+        });
+
         nodeMainExecutor.execute(goTalker, nodeConfiguration);
+        nodeMainExecutor.execute(newGoTalker, nodeConfiguration);
         nodeMainExecutor.execute(switchMode, nodeConfiguration);
         nodeMainExecutor.execute(initPoseTalker, nodeConfiguration);
         nodeMainExecutor.execute(liftInitPoseTalker, nodeConfiguration);
@@ -112,6 +133,7 @@ public class ClientActivity extends RosActivity {
         nodeMainExecutor.execute(errorCode, nodeConfiguration);
         nodeMainExecutor.execute(battery, nodeConfiguration);
         nodeMainExecutor.execute(zwj_standby, nodeConfiguration);
+        nodeMainExecutor.execute(liftPosition, nodeConfiguration);
 
         afterRosInit();
     }
@@ -144,7 +166,7 @@ public class ClientActivity extends RosActivity {
     }
 
     public interface LiftInitHandler {
-        void hanldLiftInit();
+        void handleLiftInit(int result);
     }
 
     private BlockHandler blockHandler;
@@ -155,5 +177,16 @@ public class ClientActivity extends RosActivity {
 
     protected interface BlockHandler {
         void hanldBlock();
+    }
+
+    private LiftPositionListener liftPositionListener;
+
+    public void setLiftPositionListener(LiftPositionListener liftPositionListener) {
+        this.liftPositionListener = liftPositionListener;
+    }
+
+    public interface LiftPositionListener {
+        void start();
+        void end();
     }
 }

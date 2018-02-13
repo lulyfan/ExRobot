@@ -18,5 +18,5 @@
         android:layout_height="100dp"
         android:text="我要放餐"
         android:textSize="50sp"
-        android:background="@drawable/bt_yellow"/>
+        android:background="@drawable/bt_yellow_select"/>
 </LinearLayout>

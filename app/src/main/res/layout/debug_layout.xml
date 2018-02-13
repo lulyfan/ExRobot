@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:id="@+id/head"
+        android:background="@drawable/dialog_border"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Debug"
+            android:textColor="@android:color/black"
+            android:textSize="30sp"
+            android:padding="10dp"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/clear"
+            android:padding="10dp"
+            android:text="clear"
+            android:textSize="30sp"
+            android:background="@null"
+            android:layout_toLeftOf="@+id/close"
+            android:layout_marginRight="10dp"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/close"
+            android:layout_alignParentRight="true"
+            android:padding="10dp"
+            android:text="close"
+            android:textSize="30sp"
+            android:background="@null"/>
+    </RelativeLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textSize="30sp"
+        android:id="@+id/log"
+        android:scrollbars="vertical"
+        android:gravity="bottom"
+        android:padding="10dp"
+        android:background="@drawable/dialog_border"/>
+</LinearLayout>

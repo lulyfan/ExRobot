@@ -11,6 +11,8 @@ import android.webkit.WebView;
 import android.widget.TextView;
 
 import com.ut.lulyfan.exrobot.R;
+import com.ut.lulyfan.exrobot.util.liftUtil.LiftControl;
+import com.ut.lulyfan.voicelib.voiceManager.SpeechSynthesizeManager;
 
 import java.io.File;
 
@@ -18,9 +20,20 @@ import java.io.File;
  * Created by Administrator on 2017/10/30/030.
  */
 
-public class MoveFragment extends Fragment{
+public class MoveFragment extends Fragment implements LiftControl.StateListener{
     private String tip;
     private TextView tv_tip;
+    private static final String KEY = "tip";
+    private SpeechSynthesizeManager ssm;
+
+    public static Fragment newInstance(String tip) {
+        Bundle bundle = new Bundle();
+        bundle.putString(KEY, tip);
+        MoveFragment fragment = new MoveFragment();
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
@@ -45,6 +58,13 @@ public class MoveFragment extends Fragment{
         webView.loadUrl("file:///android_asset/test.html");
 
         tv_tip = (TextView) root.findViewById(R.id.tv_tip);
+
+        if (getArguments() != null) {
+            tip = getArguments().getString(KEY);
+        }
+
+        ssm = ((ExActivity)getActivity()).ssm;
+
         return root;
     }
 
@@ -54,7 +74,92 @@ public class MoveFragment extends Fragment{
         tv_tip.setText(tip);
     }
 
-    public void setTip(String tip) {
-        this.tip = tip;
+    @Override
+    public void callCurFloor(final int curFloor) {
+        if (tv_tip != null) {
+            tv_tip.post(new Runnable() {
+                @Override
+                public void run() {
+                    tv_tip.setText("正在呼叫" + curFloor + "楼电梯...");
+                }
+            });
+        }
+    }
+
+    @Override
+    public void goIn() {
+        if (tv_tip != null) {
+            tv_tip.post(new Runnable() {
+                @Override
+                public void run() {
+                    tv_tip.setText("正在进入电梯...");
+                }
+            });
+        }
+        ssm.startSpeaking("我要进梯了,请让一让");
+    }
+
+    @Override
+    public void goOut() {
+        if (tv_tip != null) {
+            tv_tip.post(new Runnable() {
+                @Override
+                public void run() {
+                    tv_tip.setText("正在出梯...");
+                }
+            });
+        }
+        ssm.startSpeaking("我要出梯了,请让一让");
+    }
+
+    @Override
+    public void goInFailed() {
+        if (tv_tip != null) {
+            tv_tip.post(new Runnable() {
+                @Override
+                public void run() {
+                    tv_tip.setText("入梯失败");
+                }
+            });
+        }
+
+    }
+
+    @Override
+    public void goOutFailed() {
+        if (tv_tip != null) {
+            tv_tip.post(new Runnable() {
+                @Override
+                public void run() {
+                    tv_tip.setText("出梯失败");
+                }
+            });
+        }
+
+    }
+
+    @Override
+    public void callDstFloor(final int dstFloor) {
+        if (tv_tip != null) {
+            tv_tip.post(new Runnable() {
+                @Override
+                public void run() {
+                    tv_tip.setText("正在呼叫" + dstFloor + "楼电梯...");
+                }
+            });
+        }
+
+    }
+
+    @Override
+    public void goTaskPoint() {
+        if (tv_tip != null) {
+            tv_tip.post(new Runnable() {
+                @Override
+                public void run() {
+                    tv_tip.setText("开始派送任务");
+                }
+            });
+        }
     }
 }

@@ -33,7 +33,7 @@ public class MTEndServiceFragment extends Fragment{
         View root = inflater.inflate(R.layout.mt_layout, container, false);
         TextView textView = (TextView) root.findViewById(R.id.info);
         Button button = (Button) root.findViewById(R.id.button);
-        button.setBackgroundResource(R.drawable.bt_red);
+        button.setBackgroundResource(R.drawable.bt_red_select);
         TextView textView1 = (TextView) root.findViewById(R.id.tail);
 
         textView.setText("请您取出餐品后关闭货箱\n并点击屏幕下方的结束服务");

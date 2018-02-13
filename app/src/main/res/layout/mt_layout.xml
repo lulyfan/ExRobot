@@ -19,7 +19,7 @@
         android:layout_width="500dp"
         android:layout_height="100dp"
         android:id="@+id/button"
-        android:background="@drawable/bt_yellow"
+        android:background="@drawable/bt_yellow_select"
         android:textSize="40sp"/>
 
     <TextView
