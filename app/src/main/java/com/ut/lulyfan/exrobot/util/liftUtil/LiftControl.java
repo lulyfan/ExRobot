@@ -76,8 +76,8 @@ public class LiftControl implements LiftUtil.MsgListener, LiftUtil.ReplyListener
                     isInLift = true;
                 } else if (state == OUTING) {
                     isOutLift = true;
-                    if (stateListener != null) {
-                        stateListener.goTaskPoint();
+                    if (liftListener != null) {
+                        liftListener.goOutFinish();
                     }
                 }
 
@@ -252,7 +252,7 @@ public class LiftControl implements LiftUtil.MsgListener, LiftUtil.ReplyListener
                         state = IDLE;
                         DebugView.println("takeLift end");
                         outPoint = null;
-                        sendRealeaseDoor();
+//                        sendRealeaseDoor();
 
                         clientActivity.setLiftPositionListener(null);
                         if (liftListener != null) {
@@ -331,7 +331,7 @@ public class LiftControl implements LiftUtil.MsgListener, LiftUtil.ReplyListener
     }
 
     //设置出梯去的第一个点
-    public void setOutPoint(double[] point) {
+    public void setFirstTaskPoint(double[] point) {
         outPoint = point;
     }
 
@@ -557,7 +557,8 @@ public class LiftControl implements LiftUtil.MsgListener, LiftUtil.ReplyListener
     }
 
     public interface LiftListener {
-        void finish();
+        void finish();         //到达出梯后出的第一个点时调用
+        void goOutFinish();    //当机器出梯完成时调用
     }
 
     private StateListener stateListener;
@@ -573,6 +574,5 @@ public class LiftControl implements LiftUtil.MsgListener, LiftUtil.ReplyListener
         void goInFailed();
         void goOutFailed();
         void callDstFloor(int dstFloor);
-        void goTaskPoint();   //出梯完成后去第一个任务点时调用
     }
 }

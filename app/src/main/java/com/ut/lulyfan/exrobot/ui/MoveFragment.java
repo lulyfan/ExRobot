@@ -151,15 +151,9 @@ public class MoveFragment extends Fragment implements LiftControl.StateListener{
 
     }
 
-    @Override
-    public void goTaskPoint() {
+    public void setGoOutFinishTip(String tip) {
         if (tv_tip != null) {
-            tv_tip.post(new Runnable() {
-                @Override
-                public void run() {
-                    tv_tip.setText("开始派送任务");
-                }
-            });
+            tv_tip.setText(tip);
         }
     }
 }

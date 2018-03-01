@@ -335,25 +335,6 @@ public class DongniVoiceHelper implements SpeechDicateManager.OnDicateListener, 
                         Message.obtain(handler, VoiceConstant.MSG_MUTIL_DEST, map).sendToTarget();
 
                     }
-//                    JSONObject item0 = content.getJSONObject(0);
-//                    String dest = item0.getString("category1");
-//                    String rooms[] = ((SpeechApp)(context.getApplicationContext())).ROOMS;
-//
-//                    if (!isContainRoom(rooms, dest)) {
-//                        if (robot.getFloor() == "2") {
-//                            dest = "电梯口";
-//                            isStoped = true;
-//                            speechSynthesizeManager.startSpeaking("您的目的地不在本楼层,需要带您到电梯口吗?请在屏幕上点击确认或取消");
-//                        } else {
-//                            speechSynthesizeManager.startSpeaking("您的目的地不在本楼层");
-//                            return;
-//                        }
-//
-//                    } else {
-//                        isStoped = true;
-//                        speechSynthesizeManager.startSpeaking("您的目的地为"+dest+",请在屏幕上点击确认或取消");
-//                    }
-//                    Message.obtain(handler, VoiceConstant.MSG_DEST, dest).sendToTarget();
                     break;
 
                 case TYPE_SHOW:

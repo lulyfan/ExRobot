@@ -10,6 +10,7 @@ import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.http.MethodType;
 import com.aliyuncs.profile.DefaultProfile;
 import com.aliyuncs.profile.IClientProfile;
+import com.ut.lulyfan.exrobot.util.liftUtil.DebugView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -117,11 +118,11 @@ public class SmsUtil {
 
         //发短信
         SendSmsResponse response = sendSms(phoneNum, templateCode, para);
-        System.out.println("短信接口返回的数据----------------");
-        System.out.println("Code=" + response.getCode());
-        System.out.println("Message=" + response.getMessage());
-        System.out.println("RequestId=" + response.getRequestId());
-        System.out.println("BizId=" + response.getBizId());
+        DebugView.println("短信接口返回的数据----------------");
+        DebugView.println("Code=" + response.getCode());
+        DebugView.println("Message=" + response.getMessage());
+        DebugView.println("RequestId=" + response.getRequestId());
+        DebugView.println("BizId=" + response.getBizId());
 
         Thread.sleep(3000L);
 

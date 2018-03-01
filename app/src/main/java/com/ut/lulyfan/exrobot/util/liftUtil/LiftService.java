@@ -83,9 +83,10 @@ public class LiftService extends Service implements LiftUtil.SendListener{
         }
     }
 
-    public void setOutPoint(double[] outPoint) {
+    //设置出梯后去的第一个任务点
+    public void setFirstTaskPoint(double[] outPoint) {
         if (liftControl != null) {
-            liftControl.setOutPoint(outPoint);
+            liftControl.setFirstTaskPoint(outPoint);
         }
     }
 
